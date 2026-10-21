@@ -1,0 +1,92 @@
+/* Seria UI · Copyright (c) 2026 Sie · See LICENSE. */
+/* Seria UI design tokens. Override within your theme scope. */
+:root,
+[data-pui-theme='light'] {
+  --pui-bg: #f0f3f5;
+  --pui-panel: #fff;
+  --pui-inset: #edf2f4;
+  --pui-sidebar: #eaf0f3;
+  --pui-ink: #203641;
+  --pui-muted: #536975;
+  --pui-line: #d6e2e8;
+  --pui-control-line: #8096a2;
+  --pui-accent: #6ccdee;
+  --pui-on-accent: #123e4d;
+  --pui-accent-hover: #8adbf4;
+  --pui-accent-ink: #125a73;
+  --pui-accent-soft: #eaf3f6;
+  --pui-success: #17634d;
+  --pui-success-bg: #e3f4ed;
+  --pui-warning: #79510a;
+  --pui-warning-bg: #fff2d6;
+  --pui-danger: #ad2845;
+  --pui-danger-bg: #ffedf1;
+  --pui-shadow: 0 4px 18px -10px #1a3b4a29;
+  --pui-shadow-raised: 0 18px 56px -22px #132f4540;
+  --pui-glass-soft: #fffffff2;
+  --pui-glass-clear: #ffffffe6;
+  --pui-shine: #ffffffd9;
+  --pui-radius: 28px;
+  --pui-radius-control: 14px;
+  --pui-radius-compact: 12px;
+  --pui-radius-pill: 999px;
+  --pui-sidebar-width: 264px;
+  --pui-space-section: var(--pui-space-7);
+  --pui-space-card: var(--pui-space-6);
+  --pui-font: ui-rounded, 'SUIT Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --pui-text-xs: 11px;
+  --pui-text-sm: 13px;
+  --pui-text-base: 14px;
+  --pui-text-lg: 16px;
+  --pui-text-heading: 20px;
+  --pui-text-title: 36px;
+  --pui-text-hero: 40px;
+  --pui-leading: 1.6;
+  --pui-leading-heading: 1.25;
+  --pui-weight-medium: 650;
+  --pui-weight-bold: 750;
+  --pui-space-1: 4px;
+  --pui-space-2: 8px;
+  --pui-space-3: 12px;
+  --pui-space-4: 16px;
+  --pui-space-5: 20px;
+  --pui-space-6: 24px;
+  --pui-space-7: 28px;
+  --pui-space-8: 32px;
+  --pui-motion-fast: 120ms;
+  --pui-motion-base: 180ms;
+  --pui-motion-slow: 260ms;
+  --pui-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --pui-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --pui-motion-distance: 4px;
+  --pui-focus-width: 3px;
+  --pui-focus-offset: 3px;
+  color-scheme: light;
+}
+:root.dark,
+:root[data-theme='dark'],
+[data-pui-theme='dark'] {
+  --pui-bg: #10191f;
+  --pui-panel: #19262f;
+  --pui-inset: #202f39;
+  --pui-sidebar: #14212a;
+  --pui-ink: #edf4f8;
+  --pui-muted: #adbec9;
+  --pui-line: #344752;
+  --pui-control-line: #718b9a;
+  --pui-accent: #6ccdee;
+  --pui-accent-ink: #9fe0f6;
+  --pui-accent-soft: #203e4c;
+  --pui-success: #a4e5cd;
+  --pui-success-bg: #1b3b33;
+  --pui-warning: #f5d08a;
+  --pui-warning-bg: #403421;
+  --pui-danger: #ffb0c1;
+  --pui-danger-bg: #432a35;
+  --pui-shadow: 0 4px 18px -10px #0008;
+  --pui-shadow-raised: 0 18px 56px -22px #000b;
+  --pui-glass-soft: #19262fe8;
+  --pui-glass-clear: #19262fd6;
+  --pui-shine: #ffffff16;
+  color-scheme: dark;
+}

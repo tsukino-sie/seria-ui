@@ -1,0 +1,33 @@
+Seria UI Attribution License 1.0
+
+Copyright (c) 2026 Sie
+
+1. Permission
+You may use, copy, modify, distribute, and include this software in your
+own products or services for any purpose, including commercial use,
+provided you meet the attribution conditions below.
+
+2. Attribution
+Keep this license and the copyright notice in copies and modified versions.
+Identify Sie as the original author and link to the original repository in
+your project documentation. For a distributed user-facing application,
+provide this credit in a reasonably accessible About, Credits, or Licenses
+page. Credit does not need to appear on every screen.
+
+If you change the software, identify your changes without implying that
+Sie created or endorsed them. You may add separate terms for your own
+work, but must preserve these conditions for the original software.
+
+3. Scope
+These terms cover code, styles, documentation, and example assets for
+which Sie holds the relevant rights. They do not claim ownership of
+independent work or user content created with the software.
+Dependencies and third-party materials retain their own licenses.
+No trademark rights or endorsement are granted.
+
+4. No warranty
+The software is provided as it is, without a warranty of performance,
+fitness, availability, or freedom from defects. To the extent permitted
+by applicable law, Sie is not liable for losses arising from its use.
+
+Original repository: https://github.com/tsukino-sie/seria-ui
