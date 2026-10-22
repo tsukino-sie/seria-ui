@@ -13,7 +13,7 @@ vm.runInNewContext(compile('../showcase/sectionPosition.ts'), position);
 
 // A deterministic event/animation clock exercises the real hook's gesture handling.
 // It does not replace browser layout, touch-device or visual verification.
-function fixture() {
+function fixture({ compact = false } = {}) {
   let clock = 0;
   let animationId = 0;
   let cleanup;
@@ -38,7 +38,7 @@ function fixture() {
     innerHeight: 821,
     location: { hash: '' },
     history: { pushState() {} },
-    matchMedia: () => ({ matches: false }),
+    matchMedia: (query) => ({ matches: query === '(max-width: 1000px)' && compact }),
     addEventListener: (name, listener) => listeners.set(name, listener),
     removeEventListener: (name) => listeners.delete(name),
     requestAnimationFrame: (callback) => {
@@ -174,17 +174,69 @@ test('preview scrolling, overscroll containment and browser zoom remain native',
   f.cleanup();
 });
 
-test('one vertical swipe advances once and form keys keep their own behavior', () => {
+test('touch scrolling is native and interrupts automatic section movement', () => {
   const f = fixture();
+  f.wheel(100);
+  f.tick(400);
+  const interrupted = f.win.scrollY;
+  assert.ok(interrupted > 0 && interrupted < 757);
   f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
   assert.equal(
     f.event('touchmove', { touches: [{ clientX: 100, clientY: 260 }] }).defaultPrevented,
-    true,
+    false,
   );
   f.tick(1000);
-  f.event('touchmove', { touches: [{ clientX: 100, clientY: 200 }] });
+  assert.equal(f.win.scrollY, interrupted);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('compact screens allow native movement inside sections and across boundaries', () => {
+  const f = fixture({ compact: true });
+  for (const scrollY of [0, 350, 756, 760, 1000, 1514]) {
+    // Model the browser's native scroll position without implementing its physics.
+    f.win.scrollY = scrollY;
+    f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
+    assert.equal(
+      f.event('touchmove', { touches: [{ clientX: 100, clientY: 150 }] }).defaultPrevented,
+      false,
+    );
+    assert.equal(f.wheel(100).defaultPrevented, false);
+    assert.equal(f.wheel(-100).defaultPrevented, false);
+    assert.equal(f.event('keydown', { key: 'PageDown' }).defaultPrevented, false);
+    f.tick(2000);
+    assert.equal(f.win.scrollY, scrollY);
+    assert.equal(f.frames.size, 0);
+  }
+  const reader = f.reader();
+  reader.scrollTop = 200;
+  assert.equal(f.wheel(100, { target: reader }).defaultPrevented, false);
+  f.cleanup();
+});
+
+test('compact screens retain smooth navigation links and native input can cancel them', () => {
+  const f = fixture({ compact: true });
+  const anchor = f.reader();
+  anchor.interactive = true;
+  anchor.getAttribute = () => '#';
+  f.win.scrollY = 350;
+  assert.equal(f.event('click', { target: anchor }).defaultPrevented, true);
+  assert.equal(f.frames.size, 1);
   f.tick(1000);
-  assert.equal(f.win.scrollY, 757);
+  assert.equal(f.win.scrollY, 0);
+  f.win.scrollY = 350;
+  f.event('click', { target: anchor });
+  f.tick(400);
+  const interrupted = f.win.scrollY;
+  assert.equal(f.wheel(10).defaultPrevented, false);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, interrupted);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('form keys keep their own behavior', () => {
+  const f = fixture();
   const input = f.reader();
   input.interactive = true;
   assert.equal(f.event('keydown', { key: 'ArrowDown', target: input }).defaultPrevented, false);

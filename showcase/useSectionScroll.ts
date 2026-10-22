@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { sectionDestination, sectionEase } from './sectionPosition';
 
-/** A deliberate gesture moves one section immediately; nested editors keep native scrolling. */
+/** Desktop wheels move between sections; touch and compact screens keep native scrolling. */
 export default function useSectionScroll() {
   useEffect(() => {
     let frame = 0;
@@ -11,8 +11,7 @@ export default function useSectionScroll() {
     let wheelDirection = 0;
     let wheelLast = 0;
     let wheelConsumed = false;
-    let touch: { x: number; y: number; target: EventTarget | null } | null = null;
-    let touchConsumed = false;
+    const compact = window.matchMedia('(max-width: 1000px)');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const header = () =>
       document.querySelector('.studio-header')?.getBoundingClientRect().height ?? 64;
@@ -87,6 +86,12 @@ export default function useSectionScroll() {
         Math.abs(event.deltaY) <= Math.abs(event.deltaX)
       )
         return;
+      if (compact.matches) {
+        cancel();
+        wheelConsumed = false;
+        wheelTotal = 0;
+        return;
+      }
       const direction = event.deltaY > 0 ? 1 : -1;
       if (nested(event.target, direction)) {
         cancel();
@@ -118,31 +123,10 @@ export default function useSectionScroll() {
       wheelConsumed = true;
       move(destination);
     };
-    const touchStart = (event: TouchEvent) => {
+    const touchStart = () => {
       cancel();
-      touchConsumed = false;
-      const point = event.touches.length === 1 ? event.touches[0] : null;
-      touch = point ? { x: point.clientX, y: point.clientY, target: event.target } : null;
-    };
-    const touchMove = (event: TouchEvent) => {
-      if (!touch || event.touches.length !== 1 || blocked()) return;
-      const point = event.touches[0];
-      const y = touch.y - point.clientY;
-      if (Math.abs(y) <= Math.abs(touch.x - point.clientX)) return;
-      const direction = y > 0 ? 1 : -1;
-      if (!touchConsumed && nested(touch.target, direction)) {
-        touch = null;
-        return;
-      }
-      const destination = next(direction);
-      if (destination === null && !touchConsumed) return;
-      event.preventDefault();
-      if (touchConsumed || Math.abs(y) < 28 || destination === null) return;
-      touchConsumed = true;
-      move(destination);
-    };
-    const touchEnd = () => {
-      touch = null;
+      wheelConsumed = false;
+      wheelTotal = 0;
     };
     const down = () => {
       cancel();
@@ -154,6 +138,10 @@ export default function useSectionScroll() {
       }
       if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || blocked())
         return;
+      if (compact.matches) {
+        cancel();
+        return;
+      }
       if (
         event.target instanceof Element &&
         event.target.closest(
@@ -212,9 +200,6 @@ export default function useSectionScroll() {
     };
     window.addEventListener('wheel', wheel, { passive: false });
     window.addEventListener('touchstart', touchStart, { passive: true });
-    window.addEventListener('touchmove', touchMove, { passive: false });
-    window.addEventListener('touchend', touchEnd, { passive: true });
-    window.addEventListener('touchcancel', touchEnd, { passive: true });
     window.addEventListener('pointerdown', down, { passive: true });
     window.addEventListener('keydown', key);
     window.addEventListener('resize', resize);
@@ -223,9 +208,6 @@ export default function useSectionScroll() {
       cancel();
       window.removeEventListener('wheel', wheel);
       window.removeEventListener('touchstart', touchStart);
-      window.removeEventListener('touchmove', touchMove);
-      window.removeEventListener('touchend', touchEnd);
-      window.removeEventListener('touchcancel', touchEnd);
       window.removeEventListener('pointerdown', down);
       window.removeEventListener('keydown', key);
       window.removeEventListener('resize', resize);
