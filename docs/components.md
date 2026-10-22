@@ -163,6 +163,31 @@ Seria가 임의의 기존 CSS와 충돌하지 않는다고 보장할 수는 없�
 
 ## 재생과 구간 이동 (1.5)
 
+1.7부터 `completed`와 `onReplay`로 한 번 재생한 뒤의 다시 보기를 표시할 수 있어요.
+완료 상태에서는 현재 진행 바를 채운 채 재생/정지 버튼을 다시 보기 아이콘으로 바꿔요. 자동으로 첫 구간으로 돌아가지는 않아요.
+`completed`를 전달할 때는 `onReplay`를 함께 연결하세요. 다시 보기는 토글이 아닌 별도의 버튼 동작으로 읽혀요. `labels.replay`로 이름을 번역할 수 있어요.
+
+```tsx
+<PlaybackControls
+  items={chapters}
+  activeId={activeId}
+  playing={playing}
+  onPlayingChange={setPlaying}
+  progress={progress}
+  onActiveChange={selectChapter}
+  completed={completed}
+  onReplay={() => {
+    setActiveId(chapters[0].id);
+    setProgress(0);
+    setCompleted(false);
+    setPlaying(true);
+    // 프로젝트 타이머의 누적 시간도 0으로 돌려주세요.
+  }}
+/>
+```
+
+마지막 구간의 시간이 끝났을 때 호스트가 `completed=true`, `playing=false`로 설정해요. 다른 구간을 직접 고르면 완료 상태와 진행률을 초기화하세요. 기존의 반복 재생 사용법도 그대로 지원하며, 반복 여부는 호스트 타이머에서 정합니다.
+
 `PlaybackControls`는 진행 바, 구간 선택과 재생/일시 정지를 하나의 캡슐에 배치해요. 상위 테마의 라이트·다크와 강조색을 따르고 글꼴은 프로젝트에서 상속해요.
 
 ```tsx

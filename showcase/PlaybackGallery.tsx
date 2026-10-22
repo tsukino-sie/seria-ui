@@ -21,6 +21,7 @@ function PlaybackExample({
 }) {
   const [activeId, setActiveId] = useState(items[0].id);
   const [playing, setPlaying] = useState(false);
+  const [completed, setCompleted] = useState(false);
   const [progress, setProgress] = useState(0.58);
   const [exploring, setExploring] = useState(false);
   const [inView, setInView] = useState(false);
@@ -41,6 +42,13 @@ function PlaybackExample({
       if (document.hidden) return;
       elapsed.current += delta;
       if (elapsed.current >= 4000) {
+        if (activeId === items[items.length - 1].id) {
+          elapsed.current = 4000;
+          setProgress(1);
+          setCompleted(true);
+          setPlaying(false);
+          return;
+        }
         elapsed.current = 0;
         setActiveId(
           (id) => items[(items.findIndex((item) => item.id === id) + 1) % items.length].id,
@@ -49,7 +57,7 @@ function PlaybackExample({
       setProgress(elapsed.current / 4000);
     }, 80);
     return () => window.clearInterval(timer);
-  }, [playing, exploring, inView]);
+  }, [playing, exploring, inView, activeId]);
   const title = custom ? '개별 색상 지정' : theme === 'light' ? '라이트 테마' : '다크 테마';
   const customStyle: PlaybackControlsStyle | undefined = custom
     ? { '--pui-playback-fill': '#627c2d', '--pui-playback-track': '#e0e9c9' }
@@ -73,11 +81,20 @@ function PlaybackExample({
             items={items}
             activeId={activeId}
             playing={playing}
+            completed={completed}
+            onReplay={() => {
+              elapsed.current = 0;
+              setProgress(0);
+              setActiveId(items[0].id);
+              setCompleted(false);
+              setPlaying(true);
+            }}
             progress={progress}
             onPlayingChange={setPlaying}
             onActiveChange={(id) => {
               setActiveId(id);
               setPlaying(false);
+              setCompleted(false);
               elapsed.current = 0;
               setProgress(0);
             }}
@@ -137,6 +154,7 @@ export default function PlaybackGallery() {
   <PlaybackControls
     items={chapters} activeId={activeId}
     playing={playing} progress={progress}
+    completed={completed} onReplay={restartChapters}
     onActiveChange={selectChapter}
     onPlayingChange={setPlaying}
     onInteractionChange={setExploring}

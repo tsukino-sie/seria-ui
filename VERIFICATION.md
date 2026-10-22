@@ -1,5 +1,13 @@
 # Seria UI · 확인 기록
 
+## 재생 완료·다시 보기와 전환 완화 — 1.7.0 (2026-10-22)
+
+- 첫 진입의 전체 자동 재생을 실제로 끝까지 확인했어요. 마지막 장면 4에서 `completed=true`, `playing=false`, 진행률 1과 다시 보기 버튼을 유지하고, 예시 페이지의 opacity는 1이에요.
+- 다시 보기를 누르면 장면 0, `completed=false`, `playing=true`로 돌아오는 것을 확인했어요. 다른 장면 선택도 완료 상태를 초기화해요.
+- 재사용 PlaybackControls에 완료 상태와 별도의 다시 보기 동작을 추가했어요. 재생 토글과 구분되는 접근성 이름, 번역 가능한 라벨, 콜백의 타입과 JavaScript 방어 처리를 포함해요.
+- 장면당 6.2초, 설명의 나가기 360ms·들어오기 680ms로 조절하고 이동 거리를 줄였어요. 모션 감소 시에는 이동 없이 280ms·520ms의 페이드만 사용해요.
+- 타입·대비 검사, 테스트 9개, 코드 형식, 데모·쇼케이스 빌드와 React 18.3/19의 독립 패키지 소비자 빌드가 통과했어요.
+
 ## Reusable compositions and synchronized distribution — 1.6.0 (2026-10-22)
 
 - `npm run check`: library, demo, showcase and example types; light/dark contrast passed.

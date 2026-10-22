@@ -50,3 +50,26 @@ test('empty and stale chapter lists remain usable and labels can be localized', 
   const allDisabled = render({ items: props.items.map((item) => ({ ...item, disabled: true })) });
   assert.equal((allDisabled.match(/disabled=""/g) ?? []).length, 4);
 });
+
+test('a completed sequence keeps the final track full and exposes a replay action', () => {
+  const html = render({
+    activeId: 'style',
+    completed: true,
+    playing: true,
+    progress: 0.2,
+    onReplay() {},
+  });
+  assert.match(html, /data-playback-state="completed"/);
+  assert.match(html, /scaleX\(1\)/);
+  const toggle = html.match(/<button[^>]*class="pui-playback-toggle"[^>]*>/)[0];
+  assert.match(toggle, /aria-label="처음부터 다시 보기"/);
+  assert.ok(!toggle.includes('aria-pressed'));
+  assert.ok(!toggle.includes('disabled'));
+});
+
+test('replay labels can be translated and missing JavaScript handlers fail safely', () => {
+  const html = render({ completed: true, onReplay() {}, labels: { replay: 'Replay' } });
+  assert.match(html, /aria-label="Replay"/);
+  const withoutHandler = render({ completed: true });
+  assert.match(withoutHandler, /class="pui-playback-toggle" disabled=""/);
+});

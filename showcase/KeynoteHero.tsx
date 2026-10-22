@@ -50,7 +50,7 @@ const scenes = [
     focus: 'responsive',
   },
 ] as const;
-const duration = 4400;
+const duration = 6200;
 
 const DemoPage = memo(function DemoPage({ scene }: { scene: number }) {
   const slide = scenes[scene];
@@ -94,6 +94,7 @@ export default function KeynoteHero() {
   const [fading, setFading] = useState(false);
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
   const [requested, setRequested] = useState(true);
+  const [completed, setCompleted] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [inView, setInView] = useState(true);
   const [visible, setVisible] = useState(true);
@@ -123,7 +124,7 @@ export default function KeynoteHero() {
       observer.disconnect();
     };
   }, []);
-  const playing = ready && requested && inView && visible && !exploring;
+  const playing = ready && requested && !completed && inView && visible && !exploring;
   useLayoutEffect(() => {
     if (scene === presentedScene) {
       setFading(false);
@@ -137,7 +138,7 @@ export default function KeynoteHero() {
         setPresentedScene(scene);
         setFading(false);
       },
-      reducedMotion ? 120 : 220,
+      reducedMotion ? 280 : 360,
     );
     return () => window.clearTimeout(swap);
   }, [scene, presentedScene, reducedMotion]);
@@ -149,21 +150,37 @@ export default function KeynoteHero() {
       elapsed.current += now - last;
       last = now;
       if (elapsed.current >= duration) {
+        if (scene === scenes.length - 1) {
+          elapsed.current = duration;
+          setProgress(1);
+          setCompleted(true);
+          setRequested(false);
+          return;
+        }
         elapsed.current = 0;
         setDirection('forward');
-        setScene((value) => (value + 1) % scenes.length);
+        setScene(scene + 1);
       }
       setProgress(Math.min(1, elapsed.current / duration));
     }, 80);
     return () => window.clearInterval(timer);
-  }, [playing]);
+  }, [playing, scene]);
   const choose = (index: number) => {
     if (index < 0 || index >= scenes.length) return;
     setDirection(index >= scene ? 'forward' : 'backward');
     setRequested(false);
+    setCompleted(false);
     elapsed.current = 0;
     setProgress(0);
     setScene(index);
+  };
+  const replay = () => {
+    elapsed.current = 0;
+    setProgress(0);
+    setCompleted(false);
+    setDirection('forward');
+    setScene(0);
+    setRequested(true);
   };
   const slide = scenes[scene];
   const presentedSlide = scenes[presentedScene];
@@ -176,6 +193,7 @@ export default function KeynoteHero() {
       data-scene={scene}
       data-target-scene={scene}
       data-playing={playing}
+      data-completed={completed}
     >
       <div className="keynote-heading">
         <p>Seria UI</p>
@@ -217,6 +235,8 @@ export default function KeynoteHero() {
             activeId={slide.focus}
             progress={progress}
             playing={requested}
+            completed={completed}
+            onReplay={replay}
             respectReducedMotion={false}
             onPlayingChange={setRequested}
             onActiveChange={(id) => choose(scenes.findIndex((item) => item.focus === id))}

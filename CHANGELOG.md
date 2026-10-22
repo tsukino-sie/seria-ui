@@ -1,5 +1,12 @@
 # Changes
 
+## 1.7.0
+
+- PlaybackControls supports a completed state and a dedicated replay action, including a translated label and typed replay callback.
+- The keynote stops after its final chapter, keeps the last progress track full and replays from the first chapter on request. Manually choosing a chapter clears completion.
+- Chapters hold for 6.2 seconds. Caption exits take 360ms and entrances 680ms, with a shorter travel distance and gentler easing. Reduced motion uses a 280ms/520ms opacity transition.
+- The example page remains visible throughout the transitions.
+
 ## 1.6.0
 
 - Reusable responsive Hero split layout, explicit glass surface, token-based title and spacing controls.

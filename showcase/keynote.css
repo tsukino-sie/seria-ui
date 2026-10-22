@@ -97,11 +97,9 @@
     0 0 0 6px #ffffff03;
   transform: translateX(-135px) scale(0.92);
   transition:
-    width 800ms cubic-bezier(0.22, 0.8, 0.22, 1),
-    transform 800ms cubic-bezier(0.22, 0.8, 0.22, 1),
-    border-radius 700ms,
-    opacity 520ms ease,
-    translate 520ms ease;
+    width 1100ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 1100ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-radius 1000ms;
   overflow: hidden;
   container-type: inline-size;
   container-name: keynote-preview;
@@ -194,8 +192,8 @@
   top: 50%;
   transform: translateY(-50%);
   transition:
-    opacity 520ms ease,
-    translate 520ms ease;
+    opacity 360ms ease-in-out,
+    translate 360ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 .keynote-callout-layout {
   left: calc(50% - 585px);
@@ -272,25 +270,25 @@
 }
 .keynote-stage[data-transition='leaving'] .keynote-callout {
   opacity: 0;
-  translate: var(--callout-out, -18px) 0;
-  transition-duration: 220ms;
+  translate: var(--callout-out, -12px) 0;
+  transition-duration: 360ms;
   pointer-events: none;
 }
 .keynote-stage[data-direction='forward'] {
-  --callout-in: 24px;
-  --callout-out: -18px;
+  --callout-in: 16px;
+  --callout-out: -12px;
 }
 .keynote-stage[data-direction='backward'] {
-  --callout-in: -24px;
-  --callout-out: 18px;
+  --callout-in: -16px;
+  --callout-out: 12px;
 }
 .keynote-stage[data-transition='visible'] .keynote-callout {
-  animation: keynote-caption-in 420ms var(--pui-ease) both;
+  animation: keynote-caption-in 680ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 @keyframes keynote-caption-in {
   from {
     opacity: 0;
-    translate: var(--callout-in, 24px) 0;
+    translate: var(--callout-in, 16px) 0;
   }
   to {
     opacity: 1;
@@ -507,10 +505,10 @@
   }
   .keynote .keynote-callout {
     translate: none !important;
-    transition: opacity 120ms ease !important;
+    transition: opacity 280ms ease-in-out !important;
   }
   .keynote-stage[data-transition='visible'] .keynote-callout {
-    animation: keynote-caption-fade 180ms ease both !important;
+    animation: keynote-caption-fade 520ms ease-in-out both !important;
   }
 }
 @media (forced-colors: active) {

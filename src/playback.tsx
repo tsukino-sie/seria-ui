@@ -12,6 +12,7 @@ export type PlaybackControlsLabels = {
   group: string;
   play: string;
   pause: string;
+  replay?: string;
   reducedMotion: string;
   touchHint: string;
   goTo: (label: string) => string;
@@ -36,12 +37,13 @@ export type PlaybackControlsProps = Omit<HTMLAttributes<HTMLDivElement>, 'childr
   respectReducedMotion?: boolean;
   labels?: Partial<PlaybackControlsLabels>;
   style?: PlaybackControlsStyle;
-};
+} & ({ completed?: false; onReplay?: () => void } | { completed: boolean; onReplay: () => void });
 
 const defaultLabels: PlaybackControlsLabels = {
   group: '재생과 구간 이동',
   play: '자동 재생',
   pause: '자동 재생 일시 정지',
+  replay: '처음부터 다시 보기',
   reducedMotion: '모션 감소 설정으로 자동 시작하지 않아요. 직접 재생할 수 있어요.',
   touchHint: '다시 터치하면 이동 ↗',
   goTo: (label) => `${label} 구간으로 이동`,
@@ -55,6 +57,8 @@ export function PlaybackControls({
   playing,
   onPlayingChange,
   progress = 0,
+  completed = false,
+  onReplay,
   onInteractionChange,
   disabled = false,
   respectReducedMotion = true,
@@ -81,7 +85,8 @@ export function PlaybackControls({
   const current = items.find((item) => item.id === activeId) ?? enabledItems[0] ?? items[0];
   const exploring = !disabled && items.some((item) => item.id === peek && !item.disabled);
   const motionBlocked = respectReducedMotion && reducedMotion && !motionOptIn;
-  const isPlaying = playing && !motionBlocked;
+  const isPlaying = playing && !completed && !motionBlocked;
+  const replayLabel = text.replay ?? '처음부터 다시 보기';
   const fraction = Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0;
 
   useEffect(() => {
@@ -128,6 +133,7 @@ export function PlaybackControls({
       ref={group}
       data-exploring={exploring}
       data-reduced-motion={reducedMotion}
+      data-playback-state={completed ? 'completed' : isPlaying ? 'playing' : 'paused'}
       role="group"
       aria-label={ariaLabel ?? text.group}
       aria-disabled={disabled || undefined}
@@ -213,7 +219,7 @@ export function PlaybackControls({
             >
               {active ? (
                 <span className="pui-playback-progress" aria-hidden="true">
-                  <i style={{ transform: `scaleX(${fraction})` }} />
+                  <i style={{ transform: `scaleX(${completed ? 1 : fraction})` }} />
                 </span>
               ) : (
                 <span className="pui-playback-dot" aria-hidden="true" />
@@ -231,8 +237,13 @@ export function PlaybackControls({
       <button
         type="button"
         className="pui-playback-toggle"
-        disabled={disabled || !enabledItems.length}
+        disabled={disabled || !enabledItems.length || (completed && !onReplay)}
         onClick={() => {
+          if (completed) {
+            setMotionOptIn(true);
+            onReplay?.();
+            return;
+          }
           setMotionOptIn(!isPlaying);
           onPlayingChange(!isPlaying);
         }}
@@ -244,11 +255,21 @@ export function PlaybackControls({
           setPeek(null);
           setTouchPeek(null);
         }}
-        aria-label={isPlaying ? text.pause : text.play}
-        title={motionBlocked ? text.reducedMotion : undefined}
-        aria-pressed={isPlaying}
+        aria-label={completed ? replayLabel : isPlaying ? text.pause : text.play}
+        title={completed ? replayLabel : motionBlocked ? text.reducedMotion : undefined}
+        aria-pressed={completed ? undefined : isPlaying}
       >
-        {isPlaying ? (
+        {completed ? (
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M13 6a5.2 5.2 0 1 0 .15 3.6M9.5 6H13V2.5"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : isPlaying ? (
           <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
             <path d="M4 3v6M8 3v6" stroke="currentColor" strokeWidth="1.7" />
           </svg>
