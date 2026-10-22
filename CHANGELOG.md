@@ -1,5 +1,13 @@
 # Changes
 
+## 1.8.0
+
+- A unified olive glass introduction and a viewport-sized live workbench. The document owns its continuous background; no fixed backdrop layer leaves blank areas in full-page captures.
+- Whole-page fit at desktop, tablet, mobile and custom widths, plus a 100% view for detailed interaction. Small screens expose settings through the same workbench toolbar.
+- Live controls for composition, layout, background, theme, glass opacity/blur/saturation, accent and custom color, corner radius, spacing, text scale, borders, shadows and motion. Exported Page.tsx includes these settings.
+- A fourth editable composition exercises buttons, input, select, switch, badges, menus and dialogs. Stat and Dialog accept optional glass materials; glass blur and saturation are configurable CSS tokens.
+- Korean preview titles keep their intended word groups, including narrow widths and enlarged text. All four examples and their shared styles ship in the runnable starter.
+
 ## 1.7.0
 
 - PlaybackControls supports a completed state and a dedicated replay action, including a translated label and typed replay callback.

@@ -2,7 +2,8 @@ import './spaces.css';
 import { Button, Card, Cluster, Columns, Hero, Stack } from 'seria-ui';
 
 export type SpacesPageProps = {
-  layout?: 'split' | 'cover';
+  layout?: 'split' | 'cover' | 'stack';
+  material?: 'glass' | 'solid' | 'open';
   finish?: 'ambient' | 'plain' | 'transparent';
   onAction?: () => void;
   spacious?: boolean;
@@ -14,6 +15,7 @@ export default function EditorialPage({
   finish = 'ambient',
   onAction,
   spacious = true,
+  material = 'glass',
 }: SpacesPageProps) {
   return (
     <div
@@ -21,6 +23,7 @@ export default function EditorialPage({
       data-layout={layout}
       data-finish={finish}
       data-density={spacious ? 'spacious' : 'compact'}
+      data-material={material}
     >
       <Cluster justify="between" className="editorial-nav">
         <strong>
@@ -36,13 +39,13 @@ export default function EditorialPage({
           className="editorial-copy"
           headingLevel={3}
           align="start"
-          tone="transparent"
+          tone={material === 'open' ? 'transparent' : finish}
+          glass={material === 'glass' ? 'clear' : false}
           eyebrow="SPACE, LIGHT & EVERYDAY LIFE"
           title={
             <>
-              여백이 만드는
-              <br />
-              좋은 공간.
+              <span>여백이 만드는</span>
+              <span>좋은 공간.</span>
             </>
           }
           description="빛이 머무는 자리, 손에 닿는 소재. 오래 머물고 싶은 공간의 새로운 기준을 만나보세요."
@@ -80,7 +83,11 @@ export default function EditorialPage({
         </figure>
       </div>
       <Columns min="12rem" gap={3} className="editorial-lower">
-        <Card className="editorial-material" elevation={finish === 'ambient' ? 'raised' : 'flat'}>
+        <Card
+          glass={material === 'glass' ? 'clear' : false}
+          className="editorial-material"
+          elevation={finish === 'ambient' ? 'raised' : 'flat'}
+        >
           <Stack gap={3}>
             <Cluster justify="between">
               <span className="editorial-label">MATERIAL STUDY</span>
@@ -100,7 +107,11 @@ export default function EditorialPage({
             </Cluster>
           </Stack>
         </Card>
-        <Card className="editorial-project" tone="subtle">
+        <Card
+          glass={material === 'glass' ? 'clear' : false}
+          className="editorial-project"
+          tone="subtle"
+        >
           <span className="editorial-project-no">02</span>
           <Stack gap={2}>
             <span className="editorial-label">DESIGN NOTES</span>

@@ -41,6 +41,8 @@ Dropdown은 방향키로 항목을 이동하고 Escape로 닫아요. 비활성 �
 
 ## 카드와 대화상자
 
+1.8부터 Dialog와 Stat에도 선택적인 `glass="soft | clear"`를 전달할 수 있어요. 기본값은 이전과 같은 불투명 표면이에요. 대화상자의 유리 설정과 토큰은 포털 안에서도 이어져요.
+
 ```tsx
 <Card glass="soft">내용</Card>
 <Dialog open={open} onClose={() => setOpen(false)} title="변경할까요?"

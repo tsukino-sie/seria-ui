@@ -2,6 +2,7 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { studioThemes } from './palette';
 import { ThemeProvider, PlaybackControls, type ThemeTokens } from '../src/index';
 import EditorialPage from './EditorialPage';
+import PreviewCanvas from './PreviewCanvas';
 
 const scenes = [
   {
@@ -52,7 +53,7 @@ const scenes = [
 ] as const;
 const duration = 6200;
 
-const DemoPage = memo(function DemoPage({ scene }: { scene: number }) {
+const DemoPage = memo(function DemoPage({ scene, dark }: { scene: number; dark: boolean }) {
   const slide = scenes[scene];
   const tokens = {
     '--pui-radius': scene >= 3 ? '18px' : '8px',
@@ -60,35 +61,42 @@ const DemoPage = memo(function DemoPage({ scene }: { scene: number }) {
   } as ThemeTokens;
   return (
     <div className="keynote-demo" data-scene={scene} data-focus={slide.focus}>
-      <div className="keynote-browser-bar">
-        <span className="keynote-browser-dots" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
-        <span>seria / spaces — page preview</span>
-        <span aria-hidden="true">↗</span>
-      </div>
-      <ThemeProvider
-        defaultTheme="light"
-        storageKey="seria-keynote-light"
-        surface="inherit"
-        accent={slide.accent}
-        themes={studioThemes}
-        style={tokens}
-      >
-        <div className="keynote-page">
-          <EditorialPage
-            layout={scene === 1 ? 'cover' : 'split'}
-            finish={scene >= 2 ? 'ambient' : 'plain'}
-          />
+      <PreviewCanvas width={scene === 4 ? 360 : 900}>
+        <div className="keynote-browser-window">
+          <div className="keynote-browser-bar">
+            <span className="keynote-browser-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            <span>seria / spaces — page preview</span>
+            <span aria-hidden="true">↗</span>
+          </div>
+          <ThemeProvider
+            key={String(dark)}
+            defaultTheme={dark ? 'dark' : 'light'}
+            storageKey={`seria-keynote-v18-${dark}`}
+            surface="inherit"
+            accent={slide.accent}
+            themes={studioThemes}
+            style={tokens}
+          >
+            <div className="example-backdrop" data-backdrop="light">
+              <EditorialPage
+                layout={scene === 1 ? 'cover' : 'split'}
+                finish={scene >= 2 ? 'ambient' : 'plain'}
+                material="glass"
+                spacious={false}
+              />
+            </div>
+          </ThemeProvider>
         </div>
-      </ThemeProvider>
+      </PreviewCanvas>
     </div>
   );
 });
 
-export default function KeynoteHero() {
+export default function KeynoteHero({ dark = false }: { dark?: boolean }) {
   const [scene, setScene] = useState(0);
   const [presentedScene, setPresentedScene] = useState(0);
   const [fading, setFading] = useState(false);
@@ -208,7 +216,7 @@ export default function KeynoteHero() {
         aria-label="자동으로 변화하는 Seria 페이지 소개"
       >
         <div className="keynote-stage-glow" aria-hidden="true" />
-        <DemoPage scene={scene} />
+        <DemoPage scene={scene} dark={dark} />
         <div
           key={presentedScene}
           className={`keynote-callout keynote-callout-${presentedSlide.focus}`}
@@ -224,8 +232,9 @@ export default function KeynoteHero() {
       </div>
       <div className="keynote-controls">
         <ThemeProvider
-          defaultTheme="dark"
-          storageKey="seria-keynote-controls"
+          key={String(dark)}
+          defaultTheme={dark ? 'dark' : 'light'}
+          storageKey={`seria-keynote-controls-v18-${dark}`}
           surface="inherit"
           accent={slide.accent}
           themes={studioThemes}

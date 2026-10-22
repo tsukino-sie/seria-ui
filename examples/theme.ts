@@ -10,6 +10,10 @@ export const exampleThemes = {
     '--pui-muted': '#626e53',
     '--pui-line': '#dce3d0',
     '--pui-control-line': '#879674',
+    '--pui-glass-clear': '#ffffff94',
+    '--pui-glass-soft': '#ffffffbf',
+    '--pui-glass-blur': '22px',
+    '--pui-glass-saturation': '125%',
   },
   dark: {
     '--pui-bg': '#141a0f',
@@ -19,5 +23,9 @@ export const exampleThemes = {
     '--pui-muted': '#b3bfa1',
     '--pui-line': '#3b4a2b',
     '--pui-control-line': '#82966e',
+    '--pui-glass-clear': '#23301b94',
+    '--pui-glass-soft': '#23301bbf',
+    '--pui-glass-blur': '22px',
+    '--pui-glass-saturation': '125%',
   },
 } satisfies Record<'light' | 'dark', ThemeTokens>;

@@ -13,9 +13,12 @@ import {
   Badge,
 } from 'seria-ui';
 import Spaces from './Spaces';
+import ComponentPage from './ComponentPage';
 
 export type StarterPageProps = {
-  composition?: 'intro' | 'journal' | 'workspace';
+  composition?: 'intro' | 'journal' | 'workspace' | 'components';
+  material?: 'glass' | 'solid' | 'open';
+  layout?: 'split' | 'stack' | 'cover';
   finish?: 'ambient' | 'plain' | 'transparent';
   spacious?: boolean;
   onAction?: () => void;
@@ -31,12 +34,23 @@ export default function StarterPage({
   onAction,
   saved = false,
   onSave,
+  material = 'glass',
+  layout = 'split',
 }: StarterPageProps) {
+  if (composition === 'components') return <ComponentPage material={material} />;
   if (composition === 'intro')
-    return <Spaces finish={finish} spacious={spacious} onAction={onAction} />;
+    return (
+      <Spaces
+        finish={finish}
+        spacious={spacious}
+        onAction={onAction}
+        material={material}
+        layout={layout}
+      />
+    );
   const spacing = spacious ? 'comfortable' : 'compact';
   return (
-    <div>
+    <div className="example-page" data-material={material}>
       <PageSection spacing="compact" aria-label="예시 페이지 소개">
         <Cluster justify="between">
           <strong>{composition === 'journal' ? 'Seria / Journal' : 'Seria / Work'}</strong>
@@ -49,7 +63,8 @@ export default function StarterPage({
         <>
           <PageSection spacing={spacing}>
             <Hero
-              layout="split"
+              layout={layout === 'stack' ? 'stack' : 'split'}
+              glass={material === 'glass' ? 'clear' : false}
               tone={finish}
               align="start"
               headingLevel={3}
@@ -102,6 +117,7 @@ export default function StarterPage({
           >
             <Columns min="16rem">
               <FeatureBlock
+                glass={material === 'glass' ? 'clear' : false}
                 headingLevel={3}
                 eyebrow="01 / 일상"
                 title="나만의 속도를 찾는 일"
@@ -113,6 +129,7 @@ export default function StarterPage({
                 }
               />
               <FeatureBlock
+                glass={material === 'glass' ? 'clear' : false}
                 headingLevel={3}
                 eyebrow="02 / 공간"
                 title="비워 두어도 좋은 공간"
@@ -131,6 +148,7 @@ export default function StarterPage({
         <>
           <PageSection spacing={spacing}>
             <Hero
+              glass={material === 'glass' ? 'clear' : false}
               tone={finish}
               align="start"
               headingLevel={3}
@@ -146,9 +164,24 @@ export default function StarterPage({
           </PageSection>
           <PageSection spacing={spacing} aria-label="작업 현황">
             <Columns min="12rem">
-              <Stat label="진행 중인 작업" value="08" detail="지금 집중하고 있어요" />
-              <Stat label="이번 주 완료" value="12" detail="하나씩 쌓아가고 있어요" />
-              <Stat label="함께하는 사람" value="04" detail="서로의 생각을 나눠요" />
+              <Stat
+                glass={material === 'glass' ? 'clear' : false}
+                label="진행 중인 작업"
+                value="08"
+                detail="지금 집중하고 있어요"
+              />
+              <Stat
+                glass={material === 'glass' ? 'clear' : false}
+                label="이번 주 완료"
+                value="12"
+                detail="하나씩 쌓아가고 있어요"
+              />
+              <Stat
+                glass={material === 'glass' ? 'clear' : false}
+                label="함께하는 사람"
+                value="04"
+                detail="서로의 생각을 나눠요"
+              />
             </Columns>
           </PageSection>
           <PageSection
@@ -161,7 +194,7 @@ export default function StarterPage({
               </Button>
             }
           >
-            <Card>
+            <Card glass={material === 'glass' ? 'clear' : false}>
               <Stack gap={6}>
                 {[
                   { title: '새로운 페이지 구성하기', time: '오늘', status: '진행 중' },

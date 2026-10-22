@@ -1,5 +1,26 @@
 # Design Tokens
 
+## 유리 질감 조절 (1.8)
+
+`glass="soft | clear"`로 선택한 표면은 `--pui-glass-soft`, `--pui-glass-clear` 색상과 알파 값을 사용해요.
+`--pui-glass-blur`는 흐림 길이, `--pui-glass-saturation`은 배경 색의 포화도예요. 두 값은 선택 사항이며 미지정 시 기존 재질별 기본값을 유지해요.
+
+```tsx
+<ThemeProvider
+  surface="inherit"
+  style={{
+    '--pui-glass-clear': 'color-mix(in srgb, var(--pui-panel) 58%, transparent)',
+    '--pui-glass-blur': '22px',
+    '--pui-glass-saturation': '125%',
+  }}
+>
+  <Card glass="clear">배경이 은은하게 이어집니다.</Card>
+</ThemeProvider>
+```
+
+배경이 실제로 표면 뒤에 있어야 유리 효과가 보여요. 문서 전체를 찍을 때도 이어져야 할 배경은 body나 문서 높이를 갖는 컨테이너에 그리세요. 화면 높이의 fixed 레이어만으로 전체 문서 배경을 만들지 마세요.
+투명도 감소·효과 끄기·blur 미지원 환경의 불투명 대체 표면을 유지해요. 기본 라이브러리 재질은 자동으로 바뀌지 않으며 1.8의 편집 예제는 유리 질감을 기본 선택해요.
+
 1.6의 구성 토큰: `--pui-hero-padding`, `--pui-hero-gap`, `--pui-hero-title-size`, `--pui-hero-ambient-title-size`, `--pui-hero-description-size`, `--pui-hero-content-gap`, `--pui-section-inset`, `--pui-section-space`.
 제목 크기와 안쪽 여백은 좁은 컨테이너에서 넘치지 않도록 줄어들며, 서체 자체는 변경하지 않아요. 프로젝트의 ThemeProvider style 또는 CSS 범위에서 덮어쓸 수 있어요.
 

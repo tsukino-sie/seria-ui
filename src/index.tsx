@@ -129,13 +129,15 @@ export function Stat({
   label,
   value,
   detail,
+  glass = false,
 }: {
   label: string;
   value: ReactNode;
   detail?: ReactNode;
+  glass?: Glass;
 }) {
   return (
-    <Surface className="pui-stat">
+    <Surface className="pui-stat" glass={glass}>
       <span className="pui-muted">{label}</span>
       <strong>{value}</strong>
       {detail && <small className="pui-muted">{detail}</small>}
@@ -318,6 +320,7 @@ export function Modal({
   description,
   children,
   actions,
+  glass = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -325,6 +328,7 @@ export function Modal({
   description?: string;
   children?: ReactNode;
   actions?: ReactNode;
+  glass?: Glass;
 }) {
   const scope = useThemeScope();
   return (
@@ -337,7 +341,7 @@ export function Modal({
     >
       <DialogBackdrop className="pui-backdrop" />
       <div className="pui-modal-viewport">
-        <DialogPanel className="pui-modal-panel">
+        <DialogPanel className="pui-modal-panel" data-glass={glass || undefined}>
           <DialogTitle className="pui-modal-title">{title}</DialogTitle>
           {description && <Description className="pui-muted">{description}</Description>}
           {children}

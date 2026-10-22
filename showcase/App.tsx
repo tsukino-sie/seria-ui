@@ -1,28 +1,9 @@
-import { useState, useEffect, type ReactNode, type CSSProperties } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import KeynoteHero from './KeynoteHero';
 import PlaybackGallery from './PlaybackGallery';
-import StarterPage from '../examples/StarterPage';
-import starterSource from '../examples/StarterPage.tsx?raw';
-import spacesSource from '../examples/Spaces.tsx?raw';
-import spacesStyles from '../examples/spaces.css?raw';
-import themeSource from '../examples/theme.ts?raw';
+import StudioPlayground from './StudioPlayground';
 import { SERIA_VERSION } from '../src/index';
-import { studioAccents, studioThemes } from './palette';
-import { ThemeProvider, Stack, Button, Field, Input, Dialog, type ThemeTokens } from '../src/index';
 
-type Composition = 'intro' | 'journal' | 'workspace';
-type Finish = 'ambient' | 'plain' | 'transparent';
-const compositions = [
-  { id: 'intro', label: '서비스 소개', icon: 'spark' },
-  { id: 'journal', label: '콘텐츠·기록', icon: 'book' },
-  { id: 'workspace', label: '업무·도구', icon: 'grid' },
-] as const;
-const colors = studioAccents;
-const shapes = [
-  { label: '정돈된', value: 12 },
-  { label: '부드러운', value: 24 },
-  { label: '둥근', value: 36 },
-];
 function Icon({ name = 'arrow', size = 20 }: { name?: string; size?: number }) {
   const paths: Record<string, ReactNode> = {
     arrow: (
@@ -106,90 +87,11 @@ function Mark() {
     </span>
   );
 }
-function Choices({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <fieldset className="control-group">
-      <legend>{label}</legend>
-      {children}
-    </fieldset>
-  );
-}
 export default function App() {
   const [dark, setDark] = useState(false);
-  const [composition, setComposition] = useState<Composition>('intro');
-  const [finish, setFinish] = useState<Finish>('ambient');
-  const [accent, setAccent] = useState<string>(colors[0].value);
-  const [radius, setRadius] = useState(24);
-  const [spacious, setSpacious] = useState(true);
-  const [mobile, setMobile] = useState(false);
-  const [codeOpen, setCodeOpen] = useState(false);
-  const [sourceFile, setSourceFile] = useState('Page.tsx');
-  const [copied, setCopied] = useState(false);
-  const [copyError, setCopyError] = useState(false);
-  const [actionOpen, setActionOpen] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [name, setName] = useState('');
-  const [submitted, setSubmitted] = useState(false);
   useEffect(() => {
     document.documentElement.dataset.studioTheme = dark ? 'dark' : 'light';
   }, [dark]);
-  const tokens = {
-    '--pui-radius': `${radius}px`,
-    '--pui-radius-control': `${Math.max(8, Math.round(radius / 2))}px`,
-  } as ThemeTokens;
-  const pageCode = `import { useState } from 'react';
-import { ThemeProvider } from 'seria-ui';
-import 'seria-ui/styles.css';
-import StarterPage from './StarterPage';
-import { exampleThemes } from './theme';
-
-// StarterPage.tsx, Spaces.tsx, spaces.css를 같은 폴더에 두세요.
-// 서체와 내용은 프로젝트에서 직접 정합니다.
-export default function Page() {
-  const [saved, setSaved] = useState(false);
-  return (
-    <ThemeProvider surface="inherit" defaultTheme="${dark ? 'dark' : 'light'}"
-      themes={exampleThemes} storageKey="my-page-theme" accent="${accent}"
-      style={{ '--pui-radius': '${radius}px', '--pui-radius-control': '${Math.max(8, Math.round(radius / 2))}px' }}>
-      <StarterPage composition="${composition}" finish="${finish}" spacious={${spacious}}
-        saved={saved} onSave={() => setSaved(!saved)}
-        onAction={() => { /* 이동, 저장 등 프로젝트 동작을 연결하세요. */ }} />
-    </ThemeProvider>
-  );
-}`;
-  const sourceFiles: Record<string, string> = {
-    'Page.tsx': pageCode,
-    'StarterPage.tsx': starterSource,
-    'Spaces.tsx': spacesSource,
-    'spaces.css': spacesStyles,
-    'theme.ts': themeSource,
-  };
-  const code = sourceFiles[sourceFile];
-  const reset = () => {
-    setComposition('intro');
-    setFinish('ambient');
-    setAccent(colors[0].value);
-    setRadius(24);
-    setSpacious(true);
-    setMobile(false);
-  };
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setCopyError(false);
-    } catch {
-      setCopyError(true);
-    }
-  };
-  useEffect(() => {
-    setCopied(false);
-    setCopyError(false);
-  }, [code]);
-  const action = () => {
-    setActionOpen(true);
-    setSubmitted(false);
-  };
   return (
     <div className="studio">
       <a className="studio-skip" href="#main">
@@ -223,230 +125,8 @@ export default function Page() {
         </div>
       </header>
       <main id="main">
-        <KeynoteHero />
-        <section id="playground" className="playground-section section-wrap">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">01 / PLAYGROUND</span>
-              <h2>같은 요소, 다른 가능성.</h2>
-              <p>구성을 고르고, 색과 표면을 바꿔보세요. 페이지 전체가 함께 반응해요.</p>
-            </div>
-            <span className="live-label">
-              <i /> LIVE PREVIEW
-            </span>
-          </div>
-          <div className="playground">
-            <aside className="playground-controls" aria-label="미리보기 설정">
-              <div className="controls-title">
-                <span>페이지 조합</span>
-                <button onClick={reset} className="reset-button">
-                  초기화 ↺
-                </button>
-              </div>
-              <Choices label="01 구성">
-                {compositions.map((item) => (
-                  <button
-                    key={item.id}
-                    className="composition-button"
-                    aria-pressed={composition === item.id}
-                    onClick={() => setComposition(item.id)}
-                  >
-                    <Icon name={item.icon} size={18} />
-                    <span>{item.label}</span>
-                    <span className="choice-check">
-                      {composition === item.id ? <Icon name="check" size={14} /> : <span />}
-                    </span>
-                  </button>
-                ))}
-              </Choices>
-              <Choices label="02 표면 표현">
-                <div className="finish-choices">
-                  {[
-                    { id: 'ambient', label: '은은한 빛' },
-                    { id: 'plain', label: '단정한 면' },
-                    { id: 'transparent', label: '열린 여백' },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      aria-pressed={finish === item.id}
-                      onClick={() => setFinish(item.id as Finish)}
-                    >
-                      <span className={`finish-swatch ${item.id}`} />
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </Choices>
-              <Choices label="03 강조색">
-                <div className="color-choices">
-                  {colors.map((item) => (
-                    <button
-                      key={item.value}
-                      aria-label={item.label}
-                      title={item.label}
-                      aria-pressed={accent === item.value}
-                      style={{ '--swatch': item.value, color: item.ink } as CSSProperties}
-                      onClick={() => setAccent(item.value)}
-                    >
-                      {accent === item.value && <Icon name="check" size={17} />}
-                    </button>
-                  ))}
-                </div>
-              </Choices>
-              <Choices label="04 모서리">
-                <div className="shape-choices">
-                  {shapes.map((item) => (
-                    <button
-                      key={item.value}
-                      aria-pressed={radius === item.value}
-                      onClick={() => setRadius(item.value)}
-                    >
-                      <span style={{ borderRadius: item.value / 3 }} />
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </Choices>
-              <Choices label="05 간격">
-                <div className="spacing-choices">
-                  {[
-                    { label: '여유롭게', value: true },
-                    { label: '촘촘하게', value: false },
-                  ].map((item) => (
-                    <button
-                      key={item.label}
-                      aria-pressed={spacious === item.value}
-                      onClick={() => setSpacious(item.value)}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </Choices>
-              <p className="controls-note">
-                <Icon name="spark" size={15} /> 선택은 가볍게.
-                <br />
-                균형은 함께 바뀌어요.
-              </p>
-            </aside>
-            <div className="preview-panel">
-              <div className="preview-toolbar">
-                <div className="window-dots" aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                </div>
-                <span>seria / {composition}</span>
-                <div className="viewport-toggle" role="group" aria-label="미리보기 너비">
-                  <button
-                    aria-label="넓은 화면"
-                    aria-pressed={!mobile}
-                    onClick={() => setMobile(false)}
-                  >
-                    <Icon name="desktop" size={17} />
-                  </button>
-                  <button
-                    aria-label="모바일 너비"
-                    aria-pressed={mobile}
-                    onClick={() => setMobile(true)}
-                  >
-                    <Icon name="mobile" size={17} />
-                  </button>
-                </div>
-              </div>
-              <div className="preview-bed">
-                <div className={`preview-frame ${mobile ? 'is-mobile' : ''}`}>
-                  <ThemeProvider
-                    defaultTheme={dark ? 'dark' : 'light'}
-                    key={String(dark)}
-                    storageKey={`seria-studio-preview-${dark}`}
-                    accent={accent}
-                    themes={studioThemes}
-                    style={tokens}
-                    surface="inherit"
-                  >
-                    <div
-                      className="recipe-preview"
-                      data-composition={composition}
-                      data-preview-theme={dark ? 'dark' : 'light'}
-                    >
-                      <StarterPage
-                        key={composition}
-                        composition={composition}
-                        finish={finish}
-                        spacious={spacious}
-                        onAction={action}
-                        saved={saved}
-                        onSave={() => setSaved(!saved)}
-                      />
-                    </div>
-                  </ThemeProvider>
-                </div>
-              </div>
-              <div className="preview-status">
-                <span>
-                  <span /> 실제 Seria 컴포넌트로 렌더링해요
-                </span>
-                <button
-                  onClick={() => setCodeOpen(!codeOpen)}
-                  aria-expanded={codeOpen}
-                  aria-controls="starter-code"
-                >
-                  {codeOpen ? '코드 닫기' : '시작 코드 보기'} <span>{codeOpen ? '−' : '↗'}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          {codeOpen && (
-            <div className="code-panel" id="starter-code">
-              <div>
-                <label>
-                  예제 파일{' '}
-                  <select
-                    value={sourceFile}
-                    onChange={(event) => setSourceFile(event.target.value)}
-                  >
-                    {Object.keys(sourceFiles).map((file) => (
-                      <option key={file}>{file}</option>
-                    ))}
-                  </select>
-                </label>
-                <button onClick={copy}>
-                  <Icon name={copied ? 'check' : 'copy'} size={16} />
-                  {copied ? '복사 완료' : '코드 복사'}
-                </button>
-              </div>
-              <p>전체 예시 화면의 복제 코드가 아닌, 직접 확장할 수 있는 최소 구성입니다.</p>
-              <pre tabIndex={0}>
-                <code>{code}</code>
-              </pre>
-              <p className="starter-note">
-                미리보기와 같은 전체 소스입니다. Page.tsx에는 현재 설정이 반영됩니다. 이미지와 실행
-                환경은 시작 파일에 포함되어 있어요.
-              </p>
-              <a
-                className="text-link"
-                href={`./downloads/seria-ui-starter-${SERIA_VERSION}.tar.gz`}
-                download
-              >
-                전체 시작 파일 받기 ↗
-              </a>
-              <span className="sr-only" role="status">
-                {copied ? '시작 코드를 복사했습니다.' : ''}
-              </span>
-              {copyError && (
-                <p role="status">자동 복사를 사용할 수 없어요. 코드 영역을 선택해 복사해 주세요.</p>
-              )}
-            </div>
-          )}
-          <div className="playground-note">
-            <span>YOUR TYPE, YOUR IDENTITY.</span>
-            <p>
-              Seria는 서체를 선택하거나 불러오지 않아요. 이 웹페이지의 글꼴도 사이트에서 직접
-              지정했어요.
-            </p>
-          </div>
-        </section>
+        <KeynoteHero dark={dark} />
+        <StudioPlayground dark={dark} onDarkChange={setDark} />
         <PlaybackGallery />
         <section className="principles-section section-wrap" id="principles">
           <div className="section-heading">
@@ -545,7 +225,7 @@ export default function Page() {
               <a href={`./downloads/seria-ui-starter-${SERIA_VERSION}.tar.gz`} download>
                 바로 실행하는 시작 파일 <span aria-hidden="true">↓</span>
               </a>
-              <p>압축을 푼 뒤 npm install, npm run dev. 세 가지 구성을 직접 바꿔보세요.</p>
+              <p>압축을 푼 뒤 npm install, npm run dev. 네 가지 구성을 직접 바꿔보세요.</p>
               <a href={`./downloads/seria-ui-${SERIA_VERSION}.tgz`} download>
                 Seria UI {SERIA_VERSION} 패키지 받기 <span aria-hidden="true">↓</span>
               </a>
@@ -636,51 +316,6 @@ export default function Page() {
           </a>
         </div>
       </footer>
-      <ThemeProvider
-        surface="inherit"
-        accent={accent}
-        style={tokens}
-        defaultTheme={dark ? 'dark' : 'light'}
-        key={String(dark)}
-        storageKey={`seria-studio-dialog-${dark}`}
-      >
-        <Dialog
-          open={actionOpen}
-          onClose={() => setActionOpen(false)}
-          title={submitted ? '예시 작업을 완료했어요.' : '이곳에 나의 동작을 연결하세요.'}
-          actions={
-            <Button
-              variant={submitted ? 'secondary' : 'primary'}
-              onClick={() => {
-                if (submitted) setActionOpen(false);
-                else setSubmitted(true);
-              }}
-            >
-              {submitted ? '닫기' : '예시 작업 완료'}
-            </Button>
-          }
-        >
-          <Stack gap={5}>
-            <p className="dialog-explanation">
-              {submitted
-                ? '실제 서버에 저장하지 않는 미리보기입니다. 입력과 확인 흐름을 확인할 수 있어요.'
-                : '미리보기 버튼의 예시 동작입니다. 실제 서비스에서는 이 자리에 이동, 저장 또는 신청 기능을 연결하세요.'}
-            </p>
-            {!submitted && (
-              <Field label="나의 첫 페이지 이름" hint="예시 입력이에요. 서버로 전송하지 않아요.">
-                {(props) => (
-                  <Input
-                    {...props}
-                    placeholder="예: 나의 작은 스튜디오"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                )}
-              </Field>
-            )}
-          </Stack>
-        </Dialog>
-      </ThemeProvider>
     </div>
   );
 }

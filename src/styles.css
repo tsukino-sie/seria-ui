@@ -733,16 +733,18 @@
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :is([data-glass='soft'], .pui-glass) {
     background: var(--pui-glass-soft);
-    backdrop-filter: blur(20px) saturate(130%);
-    -webkit-backdrop-filter: blur(20px) saturate(130%);
+    backdrop-filter: blur(var(--pui-glass-blur, 20px)) saturate(var(--pui-glass-saturation, 130%));
+    -webkit-backdrop-filter: blur(var(--pui-glass-blur, 20px))
+      saturate(var(--pui-glass-saturation, 130%));
     box-shadow:
       inset 0 1px 0 var(--pui-shine),
       var(--pui-shadow);
   }
   :is([data-glass='clear']) {
     background: var(--pui-glass-clear);
-    backdrop-filter: blur(28px) saturate(145%);
-    -webkit-backdrop-filter: blur(28px) saturate(145%);
+    backdrop-filter: blur(var(--pui-glass-blur, 28px)) saturate(var(--pui-glass-saturation, 145%));
+    -webkit-backdrop-filter: blur(var(--pui-glass-blur, 28px))
+      saturate(var(--pui-glass-saturation, 145%));
     box-shadow:
       inset 0 1px 0 var(--pui-shine),
       var(--pui-shadow);
@@ -1085,14 +1087,16 @@
   .pui-site-header[data-glass='soft'],
   .pui-feature-block[data-glass='soft'] {
     background: var(--pui-glass-soft);
-    backdrop-filter: blur(22px) saturate(135%);
-    -webkit-backdrop-filter: blur(22px) saturate(135%);
+    backdrop-filter: blur(var(--pui-glass-blur, 22px)) saturate(var(--pui-glass-saturation, 135%));
+    -webkit-backdrop-filter: blur(var(--pui-glass-blur, 22px))
+      saturate(var(--pui-glass-saturation, 135%));
   }
   .pui-site-header[data-glass='clear'],
   .pui-feature-block[data-glass='clear'] {
     background: var(--pui-glass-clear);
-    backdrop-filter: blur(28px) saturate(140%);
-    -webkit-backdrop-filter: blur(28px) saturate(140%);
+    backdrop-filter: blur(var(--pui-glass-blur, 28px)) saturate(var(--pui-glass-saturation, 140%));
+    -webkit-backdrop-filter: blur(var(--pui-glass-blur, 28px))
+      saturate(var(--pui-glass-saturation, 140%));
   }
 }
 @media (max-width: 1100px) {
@@ -1444,23 +1448,27 @@
   word-break: normal;
   overflow-wrap: anywhere;
 }
-.pui-hero[data-glass] {
+.pui-hero[data-glass],
+.pui-surface[data-glass] {
   background: var(--pui-panel);
 }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .pui-hero[data-glass='soft'] {
+  .pui-hero[data-glass='soft'],
+  .pui-surface[data-glass='soft'] {
     background: var(--pui-glass-soft);
   }
-  .pui-hero[data-glass='clear'] {
+  .pui-hero[data-glass='clear'],
+  .pui-surface[data-glass='clear'] {
     background: var(--pui-glass-clear);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .pui-hero[data-glass] {
+  .pui-hero[data-glass],
+  .pui-surface[data-glass] {
     background: var(--pui-panel);
   }
 }
-[data-pui-effects='off'] .pui-hero[data-glass] {
+[data-pui-effects='off'] :is(.pui-hero[data-glass], .pui-surface[data-glass]) {
   background: var(--pui-panel);
 }
 

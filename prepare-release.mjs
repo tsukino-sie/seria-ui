@@ -28,7 +28,13 @@ for (const folder of [
   path.join(starter, 'public/images'),
 ])
   mkdirSync(folder, { recursive: true });
-for (const file of ['StarterPage.tsx', 'Spaces.tsx', 'spaces.css', 'theme.ts']) {
+for (const file of [
+  'StarterPage.tsx',
+  'Spaces.tsx',
+  'ComponentPage.tsx',
+  'spaces.css',
+  'theme.ts',
+]) {
   copyFileSync(path.join(root, 'examples', file), path.join(starter, 'src', file));
 }
 copyFileSync(
@@ -108,10 +114,10 @@ function App() {
   const [notice, setNotice] = useState('');
   return <ThemeProvider accent="#68783e" themes={exampleThemes} storageKey="my-seria-page">
     <PageSection spacing="compact" aria-label="예제 설정"><Cluster justify="between">
-      <Cluster>{(['intro', 'journal', 'workspace'] as const).map((kind, index) => <Button key={kind} aria-pressed={composition === kind} onClick={() => setComposition(kind)}>{['서비스 소개', '콘텐츠·기록', '업무·도구'][index]}</Button>)}</Cluster>
+      <Cluster>{(['intro', 'journal', 'workspace', 'components'] as const).map((kind, index) => <Button key={kind} aria-pressed={composition === kind} onClick={() => setComposition(kind)}>{['서비스 소개', '콘텐츠·기록', '업무·도구', '컴포넌트'][index]}</Button>)}</Cluster>
       <ThemePicker />
     </Cluster><p role="status">{notice || '구성을 고르고 소스를 내 내용으로 바꿔보세요.'}</p></PageSection>
-    <StarterPage composition={composition} saved={saved} onSave={() => setSaved(!saved)} onAction={() => setNotice('예제 동작입니다. 이 자리에 프로젝트의 이동·저장 기능을 연결하세요.')} />
+    <div className="example-backdrop" data-backdrop="light"><StarterPage composition={composition} saved={saved} onSave={() => setSaved(!saved)} onAction={() => setNotice('예제 동작입니다. 이 자리에 프로젝트의 이동·저장 기능을 연결하세요.')} /></div>
   </ThemeProvider>;
 }
 createRoot(document.getElementById('root')!).render(<App />);
@@ -119,7 +125,7 @@ createRoot(document.getElementById('root')!).render(<App />);
 );
 writeFileSync(
   path.join(starter, 'README.md'),
-  `# Seria UI ${version} 시작 파일\n\n압축을 풀고 이 폴더에서:\n\n\`\`\`sh\nnpm install\nnpm run dev\n\`\`\`\n\n출력된 로컬 주소를 열어요. \`npm run build\`로 타입 검사와 배포 파일 생성을 실행해요.\n\n- src/StarterPage.tsx: 소개·콘텐츠·업무 구성\n- src/Spaces.tsx, spaces.css: 편집 가능한 소개 예제와 스타일\n- src/theme.ts: 선택적인 예제 색상\n- public/images/seria-space.png: 예제용 AI 생성 이미지. 자신의 이미지로 바꿔주세요.\n- 서체는 index.html의 body에서 지정하며 Seria는 서체를 로드하지 않아요.\n- onAction/onSave에서 실제 이동·저장 동작을 연결하세요.\n- 기존 프로젝트 적용 방법: https://github.com/tsukino-sie/seria-ui/blob/main/docs/adoption.md\n\n원작자 Sie 표기를 유지해주세요. LICENSE와 NOTICE를 함께 보관하세요.\n`,
+  `# Seria UI ${version} 시작 파일\n\n압축을 풀고 이 폴더에서:\n\n\`\`\`sh\nnpm install\nnpm run dev\n\`\`\`\n\n출력된 로컬 주소를 열어요. \`npm run build\`로 타입 검사와 배포 파일 생성을 실행해요.\n\n- src/StarterPage.tsx: 소개·콘텐츠·업무·컴포넌트 구성\n- src/Spaces.tsx, spaces.css: 편집 가능한 소개 예제와 스타일\n- src/theme.ts: 선택적인 예제 색상\n- public/images/seria-space.png: 예제용 AI 생성 이미지. 자신의 이미지로 바꿔주세요.\n- 서체는 index.html의 body에서 지정하며 Seria는 서체를 로드하지 않아요.\n- onAction/onSave에서 실제 이동·저장 동작을 연결하세요.\n- 기존 프로젝트 적용 방법: https://github.com/tsukino-sie/seria-ui/blob/main/docs/adoption.md\n\n원작자 Sie 표기를 유지해주세요. LICENSE와 NOTICE를 함께 보관하세요.\n`,
 );
 const starterName = `seria-ui-starter-${version}.tar.gz`;
 execFileSync('tar', [
