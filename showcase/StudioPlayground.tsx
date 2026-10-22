@@ -235,333 +235,337 @@ export default function Page() {
   };
   return (
     <section id="playground" className="playground-section showcase-section">
-      <header className="playground-heading">
-        <div>
-          <span className="eyebrow">01 / PLAYGROUND</span>
-          <h2>같은 요소, 다른 가능성.</h2>
-          <p>유리의 깊이부터 작은 간격까지. 바꾸는 순간, 페이지에도 그대로.</p>
-        </div>
-        <span className="live-label">
-          <i />
-          LIVE
-        </span>
-      </header>
-      <div className="studio-workbench" data-settings-open={settingsOpen}>
-        <aside className="studio-controls" aria-label="미리보기 설정">
-          <div className="studio-controls-title">
-            <strong>나의 페이지</strong>
-            <button type="button" onClick={reset}>
-              초기화 ↺
-            </button>
+      <div className="playground-content">
+        <header className="playground-heading">
+          <div>
+            <span className="eyebrow">01 / PLAYGROUND</span>
+            <h2>같은 요소, 다른 가능성.</h2>
+            <p>유리의 깊이부터 작은 간격까지. 바꾸는 순간, 페이지에도 그대로.</p>
           </div>
-          <div className="settings-tabs" role="group" aria-label="설정 분류">
-            {[
-              ['layout', '구성'],
-              ['surface', '재질·색'],
-              ['details', '세부'],
-            ].map(([id, label]) => (
-              <button type="button" key={id} aria-pressed={tab === id} onClick={() => setTab(id)}>
-                {label}
+          <span className="live-label">
+            <i />
+            LIVE
+          </span>
+        </header>
+        <div className="studio-workbench" data-settings-open={settingsOpen}>
+          <aside className="studio-controls" aria-label="미리보기 설정">
+            <div className="studio-controls-title">
+              <strong>나의 페이지</strong>
+              <button type="button" onClick={reset}>
+                초기화 ↺
               </button>
-            ))}
-          </div>
-          <div className="settings-body">
-            {tab === 'layout' && (
-              <>
-                <Setting title="페이지 구성">
-                  <div className="composition-choices">
-                    {[
-                      ['intro', '서비스 소개', '↗'],
-                      ['journal', '콘텐츠·기록', '▤'],
-                      ['workspace', '업무·도구', '▦'],
-                      ['components', '컴포넌트', '⊞'],
-                    ].map(([id, label, mark]) => (
-                      <button
-                        type="button"
-                        key={id}
-                        aria-pressed={composition === id}
-                        onClick={() => setComposition(id as typeof composition)}
-                      >
-                        <span aria-hidden="true">{mark}</span>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </Setting>
-                {(composition === 'intro' || composition === 'journal') && (
-                  <Setting title="내용 배치">
-                    {choose(
-                      [
-                        ['split', '좌우'],
-                        ['stack', '세로'],
-                        ...(composition === 'intro' ? [['cover', '겹침']] : []),
-                      ],
-                      layout,
-                      (id) => setLayout(id as typeof layout),
-                    )}
-                  </Setting>
-                )}
-                <Setting title="배경">
-                  <div className="background-choices">
-                    {[
-                      ['light', '은은한 빛'],
-                      ['paper', '차분한 면'],
-                      ['grid', '작은 격자'],
-                    ].map(([id, label]) => (
-                      <button
-                        type="button"
-                        key={id}
-                        data-backdrop={id}
-                        aria-pressed={backdrop === id}
-                        onClick={() => setBackdrop(id)}
-                      >
-                        <i />
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </Setting>
-                <Setting title="테마">
-                  {choose(
-                    [
-                      ['light', '라이트'],
-                      ['dark', '다크'],
-                    ],
-                    dark ? 'dark' : 'light',
-                    (id) => onDarkChange(id === 'dark'),
-                  )}
-                </Setting>
-                <p className="settings-hint">
-                  배경 위로 빛과 형태가 은은하게 비칩니다. 모든 예시는 같은 설정을 함께 사용해요.
-                </p>
-              </>
-            )}
-            {tab === 'surface' && (
-              <>
-                <Setting title="표면">
-                  {choose(
-                    [
-                      ['glass', '유리'],
-                      ['solid', '불투명'],
-                      ['open', '열린 면'],
-                    ],
-                    material,
-                    (id) => setMaterial(id as Material),
-                  )}
-                </Setting>
-                {range('opacity', '표면 농도', 20, 95, '%')}
-                {range('blur', '흐림', 0, 40, 'px')}
-                {range('saturation', '색의 깊이', 80, 180, '%')}
-                <Setting title="강조색">
-                  <div className="studio-color-choices">
-                    {studioAccents.map((color) => (
-                      <button
-                        type="button"
-                        key={color.value}
-                        aria-label={color.label}
-                        aria-pressed={accent === color.value}
-                        onClick={() => setAccent(color.value)}
-                        style={{ background: color.value, color: color.ink }}
-                      >
-                        {accent === color.value ? '✓' : ''}
-                      </button>
-                    ))}
-                    <label className="custom-color" title="직접 색상 선택">
-                      <span>＋</span>
-                      <input
-                        type="color"
-                        aria-label="사용자 강조색"
-                        value={accent}
-                        onChange={(event) => setAccent(event.target.value)}
-                      />
-                    </label>
-                  </div>
-                  <code className="color-value">{accent.toUpperCase()}</code>
-                </Setting>
-                <label className="studio-check">
-                  <input
-                    type="checkbox"
-                    checked={effects}
-                    onChange={(event) => setEffects(event.target.checked)}
-                  />
-                  유리 효과 사용
-                </label>
-              </>
-            )}
-            {tab === 'details' && (
-              <>
-                {range('radius', '모서리', 0, 40, 'px')}
-                {range('space', '간격', 75, 125, '%', 5)}
-                {range('font', '글자 크기', 85, 120, '%', 5)}
-                {range('border', '경계선', 5, 30, '%')}
-                <Setting title="그림자">
-                  {choose(
-                    [
-                      ['none', '없음'],
-                      ['soft', '은은하게'],
-                      ['deep', '깊게'],
-                    ],
-                    shadow,
-                    setShadow,
-                  )}
-                </Setting>
-                <label className="studio-check">
-                  <input
-                    type="checkbox"
-                    checked={motion}
-                    onChange={(event) => setMotion(event.target.checked)}
-                  />
-                  부드러운 전환
-                </label>
-                <label className="width-field">
-                  페이지 너비
-                  <input
-                    type="number"
-                    aria-label="페이지 너비"
-                    min={280}
-                    max={1440}
-                    step={10}
-                    value={settings.width}
-                    onChange={(event) => {
-                      const n = Number(event.target.value);
-                      if (Number.isFinite(n)) update('width', Math.max(280, Math.min(1440, n)));
-                    }}
-                  />
-                  <span>px</span>
-                </label>
-              </>
-            )}
-          </div>
-          <div className="settings-footnote">글꼴은 프로젝트의 선택 그대로.</div>
-        </aside>
-        <div className="preview-panel">
-          <div className="preview-toolbar">
-            <span className="window-dots" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
-            <span className="preview-name">seria / {composition}</span>
-            <div className="viewport-toggle" role="group" aria-label="미리보기 너비">
-              <button
-                type="button"
-                aria-label="자동 너비"
-                aria-pressed={automaticWidth.current}
-                onClick={useAutomaticWidth}
-              >
-                ↔
-              </button>
+            </div>
+            <div className="settings-tabs" role="group" aria-label="설정 분류">
               {[
-                [900, '넓은 화면', '▱'],
-                [640, '태블릿 너비', '▯'],
-                [360, '모바일 너비', '▯'],
-              ].map(([value, label, mark]) => (
-                <button
-                  type="button"
-                  key={value}
-                  aria-label={String(label)}
-                  aria-pressed={!automaticWidth.current && settings.width === value}
-                  onClick={() => update('width', Number(value))}
-                >
-                  {mark}
+                ['layout', '구성'],
+                ['surface', '재질·색'],
+                ['details', '세부'],
+              ].map(([id, label]) => (
+                <button type="button" key={id} aria-pressed={tab === id} onClick={() => setTab(id)}>
+                  {label}
                 </button>
               ))}
             </div>
-            <label className="mobile-preview-width">
-              <span className="sr-only">미리보기 너비</span>
-              <select
-                aria-label="미리보기 너비"
-                value={automaticWidth.current ? 'auto' : String(settings.width)}
-                onChange={(event) => {
-                  if (event.target.value === 'auto') useAutomaticWidth();
-                  else update('width', Number(event.target.value));
-                }}
-              >
-                <option value="auto">자동 너비</option>
-                <option value="900">넓게</option>
-                <option value="640">태블릿</option>
-                <option value="360">모바일</option>
-                {![900, 640, 360].includes(settings.width) && (
-                  <option value={settings.width}>{settings.width}px</option>
-                )}
-              </select>
-            </label>
-            <label className="preview-view">
-              <span className="sr-only">미리보기 배율</span>
-              <select
-                aria-label="미리보기 배율"
-                value={view}
-                onChange={(event) => setView(event.target.value as typeof view)}
-              >
-                <option value="auto">자동 배율</option>
-                <option value="85">85%</option>
-                <option value="75">75%</option>
-                <option value="width">읽기</option>
-                <option value="page">전체 보기</option>
-                <option value="actual">100%</option>
-              </select>
-            </label>
-            <button
-              type="button"
-              className="mobile-settings-toggle"
-              aria-expanded={settingsOpen}
-              onClick={() => setSettingsOpen(!settingsOpen)}
-            >
-              {settingsOpen ? '미리보기' : '설정'}
-            </button>
-          </div>
-          <PreviewCanvas
-            width={settings.width}
-            mode={view === 'page' || view === 'actual' ? view : 'width'}
-            zoom={view === '85' ? 0.85 : view === '75' ? 0.75 : 1}
-            comfortable={view === 'auto'}
-            responsive={automaticWidth.current && view !== 'page' && view !== 'actual'}
-          >
-            <ThemeProvider
-              key={String(dark)}
-              defaultTheme={dark ? 'dark' : 'light'}
-              storageKey={`seria-preview-v18-${dark}`}
-              surface="inherit"
-              accent={accent}
-              themes={studioThemes}
-              style={tokens}
-            >
-              <div
-                className="example-backdrop recipe-preview"
-                data-backdrop={backdrop}
-                data-motion={motion ? 'on' : 'off'}
-                data-composition={composition}
-                data-pui-effects={effects ? 'on' : 'off'}
-              >
-                <StarterPage
-                  composition={composition}
-                  material={material}
-                  layout={layout}
-                  spacious={settings.space >= 100}
-                  saved={saved}
-                  onSave={() => setSaved(!saved)}
-                  onAction={() => {
-                    setSubmitted(false);
-                    setActionOpen(true);
-                  }}
-                />
+            <div className="settings-body">
+              {tab === 'layout' && (
+                <>
+                  <Setting title="페이지 구성">
+                    <div className="composition-choices">
+                      {[
+                        ['intro', '서비스 소개', '↗'],
+                        ['journal', '콘텐츠·기록', '▤'],
+                        ['workspace', '업무·도구', '▦'],
+                        ['components', '컴포넌트', '⊞'],
+                      ].map(([id, label, mark]) => (
+                        <button
+                          type="button"
+                          key={id}
+                          aria-pressed={composition === id}
+                          onClick={() => setComposition(id as typeof composition)}
+                        >
+                          <span aria-hidden="true">{mark}</span>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </Setting>
+                  {(composition === 'intro' || composition === 'journal') && (
+                    <Setting title="내용 배치">
+                      {choose(
+                        [
+                          ['split', '좌우'],
+                          ['stack', '세로'],
+                          ...(composition === 'intro' ? [['cover', '겹침']] : []),
+                        ],
+                        layout,
+                        (id) => setLayout(id as typeof layout),
+                      )}
+                    </Setting>
+                  )}
+                  <Setting title="배경">
+                    <div className="background-choices">
+                      {[
+                        ['light', '은은한 빛'],
+                        ['paper', '차분한 면'],
+                        ['grid', '작은 격자'],
+                      ].map(([id, label]) => (
+                        <button
+                          type="button"
+                          key={id}
+                          data-backdrop={id}
+                          aria-pressed={backdrop === id}
+                          onClick={() => setBackdrop(id)}
+                        >
+                          <i />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </Setting>
+                  <Setting title="테마">
+                    {choose(
+                      [
+                        ['light', '라이트'],
+                        ['dark', '다크'],
+                      ],
+                      dark ? 'dark' : 'light',
+                      (id) => onDarkChange(id === 'dark'),
+                    )}
+                  </Setting>
+                  <p className="settings-hint">
+                    배경 위로 빛과 형태가 은은하게 비칩니다. 모든 예시는 같은 설정을 함께 사용해요.
+                  </p>
+                </>
+              )}
+              {tab === 'surface' && (
+                <>
+                  <Setting title="표면">
+                    {choose(
+                      [
+                        ['glass', '유리'],
+                        ['solid', '불투명'],
+                        ['open', '열린 면'],
+                      ],
+                      material,
+                      (id) => setMaterial(id as Material),
+                    )}
+                  </Setting>
+                  {range('opacity', '표면 농도', 20, 95, '%')}
+                  {range('blur', '흐림', 0, 40, 'px')}
+                  {range('saturation', '색의 깊이', 80, 180, '%')}
+                  <Setting title="강조색">
+                    <div className="studio-color-choices">
+                      {studioAccents.map((color) => (
+                        <button
+                          type="button"
+                          key={color.value}
+                          aria-label={color.label}
+                          aria-pressed={accent === color.value}
+                          onClick={() => setAccent(color.value)}
+                          style={{ background: color.value, color: color.ink }}
+                        >
+                          {accent === color.value ? '✓' : ''}
+                        </button>
+                      ))}
+                      <label className="custom-color" title="직접 색상 선택">
+                        <span>＋</span>
+                        <input
+                          type="color"
+                          aria-label="사용자 강조색"
+                          value={accent}
+                          onChange={(event) => setAccent(event.target.value)}
+                        />
+                      </label>
+                    </div>
+                    <code className="color-value">{accent.toUpperCase()}</code>
+                  </Setting>
+                  <label className="studio-check">
+                    <input
+                      type="checkbox"
+                      checked={effects}
+                      onChange={(event) => setEffects(event.target.checked)}
+                    />
+                    유리 효과 사용
+                  </label>
+                </>
+              )}
+              {tab === 'details' && (
+                <>
+                  {range('radius', '모서리', 0, 40, 'px')}
+                  {range('space', '간격', 75, 125, '%', 5)}
+                  {range('font', '글자 크기', 85, 120, '%', 5)}
+                  {range('border', '경계선', 5, 30, '%')}
+                  <Setting title="그림자">
+                    {choose(
+                      [
+                        ['none', '없음'],
+                        ['soft', '은은하게'],
+                        ['deep', '깊게'],
+                      ],
+                      shadow,
+                      setShadow,
+                    )}
+                  </Setting>
+                  <label className="studio-check">
+                    <input
+                      type="checkbox"
+                      checked={motion}
+                      onChange={(event) => setMotion(event.target.checked)}
+                    />
+                    부드러운 전환
+                  </label>
+                  <label className="width-field">
+                    페이지 너비
+                    <input
+                      type="number"
+                      aria-label="페이지 너비"
+                      min={280}
+                      max={1440}
+                      step={10}
+                      value={settings.width}
+                      onChange={(event) => {
+                        const n = Number(event.target.value);
+                        if (Number.isFinite(n)) update('width', Math.max(280, Math.min(1440, n)));
+                      }}
+                    />
+                    <span>px</span>
+                  </label>
+                </>
+              )}
+            </div>
+            <div className="settings-footnote">글꼴은 프로젝트의 선택 그대로.</div>
+          </aside>
+          <div className="preview-panel">
+            <div className="preview-toolbar">
+              <span className="window-dots" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
+              <span className="preview-name">seria / {composition}</span>
+              <div className="viewport-toggle" role="group" aria-label="미리보기 너비">
+                <button
+                  type="button"
+                  aria-label="자동 너비"
+                  aria-pressed={automaticWidth.current}
+                  onClick={useAutomaticWidth}
+                >
+                  ↔
+                </button>
+                {[
+                  [900, '넓은 화면', '▱'],
+                  [640, '태블릿 너비', '▯'],
+                  [360, '모바일 너비', '▯'],
+                ].map(([value, label, mark]) => (
+                  <button
+                    type="button"
+                    key={value}
+                    aria-label={String(label)}
+                    aria-pressed={!automaticWidth.current && settings.width === value}
+                    onClick={() => update('width', Number(value))}
+                  >
+                    {mark}
+                  </button>
+                ))}
               </div>
-            </ThemeProvider>
-          </PreviewCanvas>
-          <footer className="preview-status">
-            <span>
-              <i />
-              {view === 'page' ? '전체 구성을 한눈에.' : '안에서 스크롤하며 읽어보세요.'}
-            </span>
-            <button type="button" onClick={() => setCodeOpen(true)}>
-              현재 설정 가져가기 ↗
-            </button>
-          </footer>
+              <label className="mobile-preview-width">
+                <span className="sr-only">미리보기 너비</span>
+                <select
+                  aria-label="미리보기 너비"
+                  value={automaticWidth.current ? 'auto' : String(settings.width)}
+                  onChange={(event) => {
+                    if (event.target.value === 'auto') useAutomaticWidth();
+                    else update('width', Number(event.target.value));
+                  }}
+                >
+                  <option value="auto">자동 너비</option>
+                  <option value="900">넓게</option>
+                  <option value="640">태블릿</option>
+                  <option value="360">모바일</option>
+                  {![900, 640, 360].includes(settings.width) && (
+                    <option value={settings.width}>{settings.width}px</option>
+                  )}
+                </select>
+              </label>
+              <label className="preview-view">
+                <span className="sr-only">미리보기 배율</span>
+                <select
+                  aria-label="미리보기 배율"
+                  value={view}
+                  onChange={(event) => setView(event.target.value as typeof view)}
+                >
+                  <option value="auto">자동 맞춤</option>
+                  <option value="85">85%</option>
+                  <option value="75">75%</option>
+                  <option value="width">읽기</option>
+                  <option value="page">전체 보기</option>
+                  <option value="actual">100%</option>
+                </select>
+              </label>
+              <button
+                type="button"
+                className="mobile-settings-toggle"
+                aria-expanded={settingsOpen}
+                onClick={() => setSettingsOpen(!settingsOpen)}
+              >
+                {settingsOpen ? '미리보기' : '설정'}
+              </button>
+            </div>
+            <PreviewCanvas
+              width={settings.width}
+              mode={view === 'page' || view === 'actual' ? view : 'width'}
+              zoom={view === '85' ? 0.85 : view === '75' ? 0.75 : 1}
+              comfortable={view === 'auto'}
+              responsive={automaticWidth.current && view !== 'page' && view !== 'actual'}
+            >
+              <ThemeProvider
+                key={String(dark)}
+                defaultTheme={dark ? 'dark' : 'light'}
+                storageKey={`seria-preview-v18-${dark}`}
+                surface="inherit"
+                accent={accent}
+                themes={studioThemes}
+                style={tokens}
+              >
+                <div
+                  className="example-backdrop recipe-preview"
+                  data-backdrop={backdrop}
+                  data-motion={motion ? 'on' : 'off'}
+                  data-composition={composition}
+                  data-pui-effects={effects ? 'on' : 'off'}
+                >
+                  <StarterPage
+                    composition={composition}
+                    material={material}
+                    layout={layout}
+                    spacious={settings.space >= 100}
+                    saved={saved}
+                    onSave={() => setSaved(!saved)}
+                    onAction={() => {
+                      setSubmitted(false);
+                      setActionOpen(true);
+                    }}
+                  />
+                </div>
+              </ThemeProvider>
+            </PreviewCanvas>
+            <footer className="preview-status">
+              <span>
+                <i />
+                {view === 'page' || view === 'auto'
+                  ? '전체 보기와 읽기로 편하게 살펴보세요.'
+                  : '안에서 스크롤하며 읽어보세요.'}
+              </span>
+              <button type="button" onClick={() => setCodeOpen(true)}>
+                현재 설정 가져가기 ↗
+              </button>
+            </footer>
+          </div>
         </div>
+        <p className="playground-caption">
+          직접 조정한 설정과 같은 소스를 가져가세요. 특정 플랫폼에 묶이지 않습니다.
+        </p>
       </div>
-      <p className="playground-caption">
-        직접 조정한 설정과 같은 소스를 가져가세요. 특정 플랫폼에 묶이지 않습니다.
-      </p>
       <ThemeProvider
         key={`dialogs-${dark}`}
         defaultTheme={dark ? 'dark' : 'light'}

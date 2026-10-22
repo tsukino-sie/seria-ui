@@ -11,6 +11,8 @@
   --studio-soft: #dfe8d080;
   --studio-accent: #4e622b;
   --studio-code: #e5ecda;
+  --studio-scale: 1;
+  --studio-scrollbar: color-mix(in srgb, var(--studio-accent) 70%, var(--studio-bg));
 }
 :root[data-studio-theme='dark'] {
   color-scheme: dark;
@@ -23,12 +25,59 @@
   --studio-accent: #b1ce83;
   --studio-code: #202c19;
 }
+@media screen and (min-width: 1001px) {
+  :root {
+    --studio-scale: 0.8;
+  }
+}
+/* Showcase-only scrollbars. Library consumers retain their own page styling. */
+html,
+.studio *,
+.pui-modal *,
+.pui-dropdown {
+  --anchor-gap: calc(8px * var(--studio-scale));
+  scrollbar-width: thin;
+  scrollbar-color: var(--studio-scrollbar) transparent;
+}
+@supports selector(::-webkit-scrollbar) {
+  html,
+  .studio *,
+  .pui-modal *,
+  .pui-dropdown {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+  :is(html, .studio *, .pui-modal *, .pui-dropdown)::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  :is(html, .studio *, .pui-modal *, .pui-dropdown)::-webkit-scrollbar-track,
+  :is(html, .studio *, .pui-modal *, .pui-dropdown)::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  :is(html, .studio *, .pui-modal *, .pui-dropdown)::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: var(--studio-scrollbar);
+    background-clip: padding-box;
+    min-height: 40px;
+  }
+  :is(html, .studio *, .pui-modal *, .pui-dropdown)::-webkit-scrollbar-thumb:hover {
+    background-color: var(--studio-accent);
+  }
+  :is(html, .studio *, .pui-modal *, .pui-dropdown)::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
 * {
   box-sizing: border-box;
 }
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 64px;
+  scroll-padding-top: calc(64px * var(--studio-scale));
+  scrollbar-gutter: stable;
   background: var(--studio-bg);
 }
 body {
@@ -58,7 +107,8 @@ svg {
   overflow-wrap: anywhere;
 }
 .studio {
-  min-height: 100svh;
+  zoom: var(--studio-scale);
+  min-height: calc(100svh / var(--studio-scale));
   overflow: clip;
   background:
     radial-gradient(ellipse 900px 900px at 5% 5%, #b5c79a38, transparent 75%),
@@ -67,7 +117,7 @@ svg {
 .showcase-section {
   position: relative;
   isolation: isolate;
-  min-height: calc(100svh - 64px);
+  min-height: calc(100svh / var(--studio-scale) - 64px);
   scroll-margin: 0;
   background-color: var(--studio-bg);
   background-image: radial-gradient(
@@ -275,7 +325,7 @@ svg {
 .keynote {
   overflow-anchor: none;
   position: relative;
-  min-height: calc(100svh - 64px);
+  min-height: calc(100svh / var(--studio-scale) - 64px);
   padding: 32px 40px 26px;
   display: flex;
   flex-direction: column;
@@ -353,8 +403,11 @@ svg {
   flex-direction: column;
   overflow: hidden;
   border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--studio-accent) 32%, var(--studio-bg));
   background: var(--studio-panel);
-  box-shadow: 0 16px 48px -30px #30402645;
+  box-shadow:
+    0 24px 56px -28px #26371d55,
+    0 4px 14px -8px #26371d30;
 }
 .keynote-demo[data-scene='4'] {
   max-width: 360px;
@@ -394,7 +447,6 @@ svg {
   overflow-anchor: none;
   overflow: auto;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
 }
 .keynote-callout {
   min-width: 0;
@@ -500,16 +552,24 @@ svg {
 }
 /* The editor uses the available viewport; its sidebar and preview scroll independently. */
 .playground-section {
-  height: max(560px, calc(100svh - 64px));
-  min-height: min(540px, calc(100svh - 64px));
+  min-height: calc(100svh / var(--studio-scale) - 64px);
   width: 100%;
   max-width: none;
-  padding: 24px max(32px, calc((100% - 1360px) / 2)) 16px;
+  padding: 0 max(32px, calc((100% - 1360px) / 2));
   margin: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  justify-content: center;
   scroll-margin-top: 0;
+}
+.playground-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  height: max(560px, calc(100svh - 64px));
+  padding-block: 24px 16px;
+  gap: 16px;
 }
 .playground-heading {
   display: flex;
@@ -595,8 +655,6 @@ svg {
   min-height: 0;
   padding: 16px 18px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--studio-line) transparent;
   overscroll-behavior: contain;
 }
 .studio-setting {
@@ -892,7 +950,8 @@ svg {
 .recipe-preview {
   min-width: 0;
   border-radius: 12px;
-  border: 1px solid var(--studio-line);
+  border: 1px solid color-mix(in srgb, var(--studio-accent) 32%, var(--studio-bg));
+  box-shadow: 0 18px 40px -22px #26371d50;
   overflow: hidden;
 }
 .preview-status {
@@ -934,6 +993,21 @@ svg {
   gap: 12px;
   color: var(--pui-muted);
   font-size: 12px;
+}
+/* Portals stay in viewport coordinates; only their visible contents are scaled. */
+.pui-modal-panel {
+  zoom: var(--studio-scale);
+}
+.pui-dropdown {
+  min-width: calc(180px * var(--studio-scale));
+  padding: calc(6px * var(--studio-scale));
+  border-radius: calc(var(--pui-radius-control) * var(--studio-scale));
+}
+.pui-dropdown-item {
+  min-height: calc(44px * var(--studio-scale));
+  border-radius: calc(10px * var(--studio-scale));
+  padding: calc(10px * var(--studio-scale)) calc(12px * var(--studio-scale));
+  font-size: calc(var(--pui-text-sm) * var(--studio-scale));
 }
 .source-selector select {
   border: 1px solid var(--pui-line);
@@ -1285,7 +1359,7 @@ svg {
   .keynote-bottom {
     margin-top: 12px;
   }
-  .playground-section {
+  .playground-content {
     padding-top: 16px;
     gap: 12px;
   }
@@ -1424,9 +1498,11 @@ svg {
     gap: 24px;
   }
   .playground-section {
-    padding: 18px 14px 12px;
+    padding-inline: 14px;
+  }
+  .playground-content {
+    padding-block: 18px 12px;
     gap: 12px;
-    min-height: min(520px, calc(100svh - 64px));
   }
   .playground-heading h2 {
     font-size: 24px;
@@ -1569,6 +1645,9 @@ svg {
   }
 }
 @media print {
+  :root {
+    --studio-scale: 1;
+  }
   html {
     scroll-snap-type: none;
   }
@@ -1581,6 +1660,10 @@ svg {
     position: static;
   }
   .playground-section {
+    height: auto;
+    min-height: 720px;
+  }
+  .playground-content {
     height: auto;
     min-height: 720px;
   }

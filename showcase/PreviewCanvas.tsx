@@ -43,6 +43,14 @@ export default function PreviewCanvas({
     return () => observer.disconnect();
   }, [width]);
   const layoutWidth = responsive ? Math.max(240, Math.min(width, size.availableWidth - 24)) : width;
+  const pageScale = Math.min(
+    0.85,
+    (size.availableWidth - 24) / layoutWidth,
+    (size.availableHeight - 32) / Math.max(1, size.height),
+  );
+  const overview =
+    mode === 'page' || (comfortable && size.availableWidth >= 560 && pageScale >= 0.7);
+  const effectiveMode = overview ? 'page' : mode;
   const requestedScale = comfortable && size.availableWidth >= 560 ? 0.85 : zoom;
   const scale =
     mode !== 'actual'
@@ -51,7 +59,7 @@ export default function PreviewCanvas({
           Math.min(
             requestedScale,
             (size.availableWidth - 24) / layoutWidth,
-            mode === 'page' ? (size.availableHeight - 24) / Math.max(1, size.height) : 1,
+            overview ? (size.availableHeight - 32) / Math.max(1, size.height) : 1,
           ),
         )
       : 1;
@@ -59,9 +67,9 @@ export default function PreviewCanvas({
     <div
       className="preview-viewport"
       ref={viewport}
-      data-mode={mode}
+      data-mode={effectiveMode}
       role="region"
-      aria-label={mode === 'page' ? '전체 페이지 미리보기' : '스크롤하며 읽는 페이지 미리보기'}
+      aria-label={overview ? '전체 페이지 미리보기' : '스크롤하며 읽는 페이지 미리보기'}
       tabIndex={0}
     >
       <div
