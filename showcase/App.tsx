@@ -2,6 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import KeynoteHero from './KeynoteHero';
 import PlaybackGallery from './PlaybackGallery';
 import StudioPlayground from './StudioPlayground';
+import useSectionScroll from './useSectionScroll';
 import { SERIA_VERSION } from '../src/index';
 
 function Icon({ name = 'arrow', size = 20 }: { name?: string; size?: number }) {
@@ -89,6 +90,7 @@ function Mark() {
 }
 export default function App() {
   const [dark, setDark] = useState(false);
+  useSectionScroll();
   useEffect(() => {
     document.documentElement.dataset.studioTheme = dark ? 'dark' : 'light';
   }, [dark]);
@@ -282,9 +284,11 @@ export default function App() {
             </div>
           </div>
         </section>
-        <section className="closing-section showcase-section" id="closing">
+      </main>
+      <div className="closing-section showcase-section" id="closing">
+        <section className="closing-copy" aria-labelledby="closing-title">
           <Mark />
-          <h2>
+          <h2 id="closing-title">
             다음 페이지는,
             <br />
             <span>당신의 방식으로.</span>
@@ -294,28 +298,28 @@ export default function App() {
           </a>
           <p>정해진 페이지보다, 열려 있는 가능성.</p>
         </section>
-      </main>
-      <footer className="studio-footer">
-        <a href="#" className="wordmark">
-          <Mark />
-          <span>
-            seria<span className="wordmark-ui"> ui</span>
-          </span>
-        </a>
-        <span>Designed & built by Sie · © 2026</span>
-        <div>
-          <a href="https://github.com/tsukino-sie/seria-ui" target="_blank" rel="noreferrer">
-            GitHub ↗
+        <footer className="studio-footer">
+          <a href="#" className="wordmark">
+            <Mark />
+            <span>
+              seria<span className="wordmark-ui"> ui</span>
+            </span>
           </a>
-          <a
-            href="https://github.com/tsukino-sie/seria-ui/blob/main/LICENSE"
-            target="_blank"
-            rel="noreferrer"
-          >
-            이용 조건 ↗
-          </a>
-        </div>
-      </footer>
+          <span>Designed & built by Sie · © 2026</span>
+          <div>
+            <a href="https://github.com/tsukino-sie/seria-ui" target="_blank" rel="noreferrer">
+              GitHub ↗
+            </a>
+            <a
+              href="https://github.com/tsukino-sie/seria-ui/blob/main/LICENSE"
+              target="_blank"
+              rel="noreferrer"
+            >
+              이용 조건 ↗
+            </a>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

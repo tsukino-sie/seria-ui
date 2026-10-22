@@ -2,7 +2,7 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { studioThemes } from './palette';
 import { ThemeProvider, PlaybackControls, type ThemeTokens } from '../src/index';
 import EditorialPage from './EditorialPage';
-import PreviewCanvas from './PreviewCanvas';
+import usePreviewLayout from './usePreviewLayout';
 
 const scenes = [
   {
@@ -54,24 +54,30 @@ const scenes = [
 const duration = 6200;
 
 const DemoPage = memo(function DemoPage({ scene, dark }: { scene: number; dark: boolean }) {
+  const preview = usePreviewLayout(scene);
   const slide = scenes[scene];
   const tokens = {
     '--pui-radius': scene >= 3 ? '18px' : '8px',
     '--pui-radius-control': scene >= 3 ? '12px' : '8px',
   } as ThemeTokens;
   return (
-    <div className="keynote-demo" data-scene={scene} data-focus={slide.focus}>
-      <PreviewCanvas width={scene === 4 ? 360 : 900} responsive>
-        <div className="keynote-browser-window">
-          <div className="keynote-browser-bar">
-            <span className="keynote-browser-dots" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
-            <span>seria / spaces — page preview</span>
-            <span aria-hidden="true">↗</span>
-          </div>
+    <div ref={preview} className="keynote-demo" data-scene={scene} data-focus={slide.focus}>
+      <div className="keynote-browser-window">
+        <div className="keynote-browser-bar">
+          <span className="keynote-browser-dots" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+          <span>seria / spaces — page preview</span>
+          <span aria-hidden="true">↗</span>
+        </div>
+        <div
+          className="keynote-page"
+          role="region"
+          aria-label="스크롤하며 읽는 소개 페이지"
+          tabIndex={0}
+        >
           <ThemeProvider
             key={String(dark)}
             defaultTheme={dark ? 'dark' : 'light'}
@@ -91,7 +97,7 @@ const DemoPage = memo(function DemoPage({ scene, dark }: { scene: number; dark: 
             </div>
           </ThemeProvider>
         </div>
-      </PreviewCanvas>
+      </div>
       <span className="keynote-preview-hint">안에서 스크롤해보세요 ↓</span>
     </div>
   );
