@@ -1,5 +1,11 @@
 # Changes
 
+## 1.8.2
+
+- Present one showcase section at a time with viewport-based minimum height and native scroll snapping. Section backgrounds vary subtly within the olive palette, without divider lines.
+- Replace the shrunken default preview with automatic responsive width and a readable, scrollable page. Keep whole-page overview, exact-size inspection and manual viewport widths available.
+- Increase example body text to 16px and small presentation labels to 12px. Make mobile preview controls fit on one row and preserve manually selected widths during responsive changes.
+
 ## 1.8.1
 
 - Preserve the standard backdrop-filter declaration in optimized production CSS so glass blur and saturation controls work after deployment as they do during development.

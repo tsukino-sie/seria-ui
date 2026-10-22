@@ -128,7 +128,7 @@ export default function App() {
         <KeynoteHero dark={dark} />
         <StudioPlayground dark={dark} onDarkChange={setDark} />
         <PlaybackGallery />
-        <section className="principles-section section-wrap" id="principles">
+        <section className="principles-section section-wrap showcase-section" id="principles">
           <div className="section-heading">
             <div>
               <span className="eyebrow">02 / BUILT TO FIT</span>
@@ -190,7 +190,7 @@ export default function App() {
             </article>
           </div>
         </section>
-        <section className="start-section section-wrap" id="start">
+        <section className="start-section section-wrap showcase-section" id="start">
           <div className="start-copy">
             <span className="eyebrow">03 / START SMALL</span>
             <h2>
@@ -282,7 +282,7 @@ export default function App() {
             </div>
           </div>
         </section>
-        <section className="closing-section">
+        <section className="closing-section showcase-section" id="closing">
           <Mark />
           <h2>
             다음 페이지는,

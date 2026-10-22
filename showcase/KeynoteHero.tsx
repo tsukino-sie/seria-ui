@@ -61,7 +61,7 @@ const DemoPage = memo(function DemoPage({ scene, dark }: { scene: number; dark: 
   } as ThemeTokens;
   return (
     <div className="keynote-demo" data-scene={scene} data-focus={slide.focus}>
-      <PreviewCanvas width={scene === 4 ? 360 : 900}>
+      <PreviewCanvas width={scene === 4 ? 360 : 900} responsive>
         <div className="keynote-browser-window">
           <div className="keynote-browser-bar">
             <span className="keynote-browser-dots" aria-hidden="true">
@@ -92,6 +92,7 @@ const DemoPage = memo(function DemoPage({ scene, dark }: { scene: number; dark: 
           </ThemeProvider>
         </div>
       </PreviewCanvas>
+      <span className="keynote-preview-hint">안에서 스크롤해보세요 ↓</span>
     </div>
   );
 });
@@ -195,7 +196,7 @@ export default function KeynoteHero({ dark = false }: { dark?: boolean }) {
   return (
     <section
       ref={region}
-      className="keynote"
+      className="keynote showcase-section"
       id="introduction"
       aria-labelledby="keynote-title"
       data-scene={scene}

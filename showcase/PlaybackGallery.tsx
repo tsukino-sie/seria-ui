@@ -113,7 +113,7 @@ export default function PlaybackGallery() {
   const [accent, setAccent] = useState<string>(swatches[0].value);
   return (
     <section
-      className="playback-section section-wrap"
+      className="playback-section section-wrap showcase-section"
       id="playback"
       aria-labelledby="playback-title"
     >

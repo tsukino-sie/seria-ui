@@ -1,14 +1,16 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
-/** Fits the entire real page, without clipping content or changing its layout width. */
+/** Read at a useful width, inspect the whole page, or use actual CSS pixel size. */
 export default function PreviewCanvas({
   children,
   width = 900,
-  fit = true,
+  mode = 'width',
+  responsive = false,
 }: {
   children: ReactNode;
   width?: number;
-  fit?: boolean;
+  mode?: 'width' | 'page' | 'actual';
+  responsive?: boolean;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
@@ -36,26 +38,35 @@ export default function PreviewCanvas({
     update();
     return () => observer.disconnect();
   }, [width]);
-  const scale = fit
-    ? Math.max(
-        0.1,
-        Math.min(
-          1,
-          (size.availableWidth - 24) / width,
-          (size.availableHeight - 24) / Math.max(1, size.height),
-        ),
-      )
-    : 1;
+  const layoutWidth = responsive ? Math.max(240, Math.min(width, size.availableWidth - 24)) : width;
+  const scale =
+    mode !== 'actual'
+      ? Math.max(
+          0.1,
+          Math.min(
+            1,
+            (size.availableWidth - 24) / layoutWidth,
+            mode === 'page' ? (size.availableHeight - 24) / Math.max(1, size.height) : 1,
+          ),
+        )
+      : 1;
   return (
-    <div className="preview-viewport" ref={viewport} data-fit={fit}>
+    <div
+      className="preview-viewport"
+      ref={viewport}
+      data-mode={mode}
+      role="region"
+      aria-label={mode === 'page' ? '전체 페이지 미리보기' : '스크롤하며 읽는 페이지 미리보기'}
+      tabIndex={0}
+    >
       <div
         className="preview-fit-frame"
-        style={{ width: width * scale, height: size.height * scale }}
+        style={{ width: layoutWidth * scale, height: size.height * scale }}
       >
         <div
           className="preview-canvas"
           ref={canvas}
-          style={{ width, transform: `scale(${scale})` }}
+          style={{ width: layoutWidth, transform: `scale(${scale})` }}
         >
           {children}
         </div>

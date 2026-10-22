@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Button,
   Dialog,
@@ -48,13 +48,26 @@ export default function StudioPlayground({
     useState<NonNullable<StarterPageProps['composition']>>('intro');
   const [material, setMaterial] = useState<Material>('glass');
   const [layout, setLayout] = useState<NonNullable<StarterPageProps['layout']>>('split');
-  const [settings, setSettings] = useState(defaults);
+  const [settings, setSettings] = useState(() => ({
+    ...defaults,
+    width: window.matchMedia('(max-width: 700px)').matches ? 360 : defaults.width,
+  }));
+  const automaticWidth = useRef(true);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 700px)');
+    const updateWidth = () => {
+      if (automaticWidth.current)
+        setSettings((previous) => ({ ...previous, width: media.matches ? 360 : defaults.width }));
+    };
+    media.addEventListener('change', updateWidth);
+    return () => media.removeEventListener('change', updateWidth);
+  }, []);
   const [accent, setAccent] = useState<string>('#68783e');
   const [shadow, setShadow] = useState('soft');
   const [backdrop, setBackdrop] = useState('light');
   const [motion, setMotion] = useState(true);
   const [effects, setEffects] = useState(true);
-  const [fit, setFit] = useState(true);
+  const [view, setView] = useState<'width' | 'page' | 'actual'>('width');
   const [tab, setTab] = useState('layout');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [codeOpen, setCodeOpen] = useState(false);
@@ -65,8 +78,17 @@ export default function StudioPlayground({
   const [actionOpen, setActionOpen] = useState(false);
   const [name, setName] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const update = (key: keyof typeof defaults, value: number) =>
+  const update = (key: keyof typeof defaults, value: number) => {
+    if (key === 'width') automaticWidth.current = false;
     setSettings((previous) => ({ ...previous, [key]: value }));
+  };
+  const useAutomaticWidth = () => {
+    automaticWidth.current = true;
+    setSettings((previous) => ({
+      ...previous,
+      width: window.matchMedia('(max-width: 700px)').matches ? 360 : defaults.width,
+    }));
+  };
   const tokens = useMemo(() => {
     const s = settings,
       ratio = s.space / 100,
@@ -83,9 +105,9 @@ export default function StudioPlayground({
       '--pui-glass-blur': `${effects ? s.blur : 0}px`,
       '--pui-glass-saturation': `${effects ? s.saturation : 100}%`,
       '--pui-line': `color-mix(in srgb, var(--pui-ink) ${s.border}%, transparent)`,
-      '--pui-text-base': `${14 * font}px`,
-      '--pui-text-sm': `${13 * font}px`,
-      '--pui-text-lg': `${16 * font}px`,
+      '--pui-text-base': `${16 * font}px`,
+      '--pui-text-sm': `${14 * font}px`,
+      '--pui-text-lg': `${18 * font}px`,
       '--pui-text-heading': `${20 * font}px`,
       '--pui-text-title': `${32 * font}px`,
       '--pui-hero-title-size': `${44 * font}px`,
@@ -178,17 +200,21 @@ export default function Page() {
     </label>
   );
   const reset = () => {
+    automaticWidth.current = true;
     onDarkChange(false);
     setComposition('intro');
     setMaterial('glass');
     setLayout('split');
-    setSettings(defaults);
+    setSettings({
+      ...defaults,
+      width: window.matchMedia('(max-width: 700px)').matches ? 360 : defaults.width,
+    });
     setAccent('#68783e');
     setShadow('soft');
     setBackdrop('light');
     setMotion(true);
     setEffects(true);
-    setFit(true);
+    setView('width');
   };
   const copy = async () => {
     try {
@@ -208,7 +234,7 @@ export default function Page() {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   return (
-    <section id="playground" className="playground-section">
+    <section id="playground" className="playground-section showcase-section">
       <header className="playground-heading">
         <div>
           <span className="eyebrow">01 / PLAYGROUND</span>
@@ -417,6 +443,14 @@ export default function Page() {
             </span>
             <span className="preview-name">seria / {composition}</span>
             <div className="viewport-toggle" role="group" aria-label="미리보기 너비">
+              <button
+                type="button"
+                aria-label="자동 너비"
+                aria-pressed={automaticWidth.current}
+                onClick={useAutomaticWidth}
+              >
+                ↔
+              </button>
               {[
                 [900, '넓은 화면', '▱'],
                 [640, '태블릿 너비', '▯'],
@@ -426,21 +460,44 @@ export default function Page() {
                   type="button"
                   key={value}
                   aria-label={String(label)}
-                  aria-pressed={settings.width === value}
+                  aria-pressed={!automaticWidth.current && settings.width === value}
                   onClick={() => update('width', Number(value))}
                 >
                   {mark}
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              className="fit-toggle"
-              aria-pressed={fit}
-              onClick={() => setFit(!fit)}
-            >
-              {fit ? '화면에 맞춤' : '100%'}
-            </button>
+            <label className="mobile-preview-width">
+              <span className="sr-only">미리보기 너비</span>
+              <select
+                aria-label="미리보기 너비"
+                value={automaticWidth.current ? 'auto' : String(settings.width)}
+                onChange={(event) => {
+                  if (event.target.value === 'auto') useAutomaticWidth();
+                  else update('width', Number(event.target.value));
+                }}
+              >
+                <option value="auto">자동 너비</option>
+                <option value="900">넓게</option>
+                <option value="640">태블릿</option>
+                <option value="360">모바일</option>
+                {![900, 640, 360].includes(settings.width) && (
+                  <option value={settings.width}>{settings.width}px</option>
+                )}
+              </select>
+            </label>
+            <label className="preview-view">
+              <span className="sr-only">미리보기 배율</span>
+              <select
+                aria-label="미리보기 배율"
+                value={view}
+                onChange={(event) => setView(event.target.value as typeof view)}
+              >
+                <option value="width">읽기</option>
+                <option value="page">전체 보기</option>
+                <option value="actual">100%</option>
+              </select>
+            </label>
             <button
               type="button"
               className="mobile-settings-toggle"
@@ -450,7 +507,11 @@ export default function Page() {
               {settingsOpen ? '미리보기' : '설정'}
             </button>
           </div>
-          <PreviewCanvas width={settings.width} fit={fit}>
+          <PreviewCanvas
+            width={settings.width}
+            mode={view}
+            responsive={automaticWidth.current && view === 'width'}
+          >
             <ThemeProvider
               key={String(dark)}
               defaultTheme={dark ? 'dark' : 'light'}
@@ -485,7 +546,7 @@ export default function Page() {
           <footer className="preview-status">
             <span>
               <i />
-              전체 페이지를 그대로 보여드려요.
+              {view === 'page' ? '전체 구성을 한눈에.' : '안에서 스크롤하며 읽어보세요.'}
             </span>
             <button type="button" onClick={() => setCodeOpen(true)}>
               현재 설정 가져가기 ↗

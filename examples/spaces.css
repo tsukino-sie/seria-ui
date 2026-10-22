@@ -48,7 +48,7 @@
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
-.example-page .pui-hero-copy > h3 {
+.example-page[data-material] .pui-hero[data-tone] .pui-hero-copy > h3 {
   font-size: clamp(
     22px,
     calc(6cqw * var(--pui-example-font, 1)),
@@ -67,7 +67,7 @@
   padding: calc(28px * var(--example-space));
   color: var(--pui-ink);
   background: transparent;
-  font-size: calc(12px * var(--example-font));
+  font-size: calc(16px * var(--example-font));
   line-height: 1.6;
   container: seria-spaces / inline-size;
 }
@@ -85,19 +85,19 @@
 .editorial-nav > strong > span {
   margin-left: 6px;
   color: var(--pui-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   letter-spacing: 0;
 }
 .editorial-nav-links {
   display: flex;
   gap: 20px;
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .editorial-edition {
   color: var(--pui-muted);
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 1px;
 }
 .editorial-composition {
@@ -120,11 +120,11 @@
 }
 .editorial-page .editorial-copy .pui-eyebrow {
   color: var(--pui-accent-ink);
-  font-size: calc(8px * var(--example-font));
+  font-size: calc(11px * var(--example-font));
   letter-spacing: 1px;
   margin: 0 0 18px !important;
 }
-.editorial-page .editorial-copy .pui-hero-copy > h3 {
+.editorial-page[data-material] .pui-hero.editorial-copy .pui-hero-copy > h3 {
   margin: 0;
   font-size: clamp(20px, calc(10cqw * var(--example-font)), calc(42px * var(--example-font)));
   font-weight: 650;
@@ -141,7 +141,7 @@
 .editorial-page .editorial-copy .pui-hero-description {
   margin-top: calc(20px * var(--example-space));
   max-width: none;
-  font-size: calc(12px * var(--example-font));
+  font-size: calc(16px * var(--example-font));
   line-height: 1.85;
 }
 .editorial-page .editorial-copy .pui-actions {
@@ -149,10 +149,10 @@
   margin-top: calc(24px * var(--example-space));
 }
 .editorial-page .editorial-copy .pui-button {
-  min-height: 38px;
+  min-height: 44px;
   padding: 9px 16px;
   gap: 20px;
-  font-size: calc(11px * var(--example-font));
+  font-size: calc(14px * var(--example-font));
   border-radius: var(--pui-radius-control);
 }
 .editorial-page .editorial-copy .pui-hero-content {
@@ -165,7 +165,7 @@
   align-items: center;
   gap: 7px;
   color: var(--pui-muted);
-  font-size: 7px;
+  font-size: 12px;
   letter-spacing: 0.4px;
 }
 .editorial-copy-note > i {
@@ -206,7 +206,7 @@
   backdrop-filter: blur(12px);
   border: 1px solid #ffffff35;
   border-radius: max(6px, calc(var(--pui-radius) / 3));
-  font-size: 7px;
+  font-size: 12px;
   letter-spacing: 0.8px;
 }
 .editorial-image-mark {
@@ -228,7 +228,7 @@
 }
 .editorial-label {
   color: var(--pui-muted);
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.6px;
 }
 .editorial-arrow {
@@ -237,7 +237,7 @@
 }
 .editorial-material strong,
 .editorial-project strong {
-  font-size: calc(12px * var(--example-font));
+  font-size: calc(16px * var(--example-font));
   font-weight: 650;
 }
 .editorial-swatches {
@@ -273,7 +273,7 @@
 .editorial-project p {
   margin: 4px 0 0;
   color: var(--pui-muted);
-  font-size: calc(10px * var(--example-font));
+  font-size: calc(14px * var(--example-font));
   line-height: 1.7;
 }
 .editorial-project > .editorial-arrow {
@@ -284,7 +284,7 @@
   padding-top: 12px;
   border-top: 1px solid var(--pui-line);
   color: var(--pui-muted);
-  font-size: 7px;
+  font-size: 12px;
   letter-spacing: 0.5px;
 }
 .editorial-page[data-layout='stack'] .editorial-composition {
@@ -320,7 +320,7 @@
   }
   .editorial-nav-links {
     gap: 12px;
-    font-size: 10px;
+    font-size: 12px;
   }
   .editorial-nav-links > span:not(:last-child),
   .editorial-edition {
@@ -335,7 +335,7 @@
   }
   .editorial-page .editorial-copy .pui-eyebrow {
     margin-bottom: 12px !important;
-    font-size: 7px;
+    font-size: 12px;
   }
   .editorial-page .editorial-copy .pui-hero-description {
     margin-top: 14px;
