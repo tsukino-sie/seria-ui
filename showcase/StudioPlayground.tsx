@@ -67,7 +67,7 @@ export default function StudioPlayground({
   const [backdrop, setBackdrop] = useState('light');
   const [motion, setMotion] = useState(true);
   const [effects, setEffects] = useState(true);
-  const [view, setView] = useState<'width' | 'page' | 'actual'>('width');
+  const [view, setView] = useState<'auto' | '85' | '75' | 'width' | 'page' | 'actual'>('auto');
   const [tab, setTab] = useState('layout');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [codeOpen, setCodeOpen] = useState(false);
@@ -214,7 +214,7 @@ export default function Page() {
     setBackdrop('light');
     setMotion(true);
     setEffects(true);
-    setView('width');
+    setView('auto');
   };
   const copy = async () => {
     try {
@@ -493,6 +493,9 @@ export default function Page() {
                 value={view}
                 onChange={(event) => setView(event.target.value as typeof view)}
               >
+                <option value="auto">자동 배율</option>
+                <option value="85">85%</option>
+                <option value="75">75%</option>
                 <option value="width">읽기</option>
                 <option value="page">전체 보기</option>
                 <option value="actual">100%</option>
@@ -509,8 +512,10 @@ export default function Page() {
           </div>
           <PreviewCanvas
             width={settings.width}
-            mode={view}
-            responsive={automaticWidth.current && view === 'width'}
+            mode={view === 'page' || view === 'actual' ? view : 'width'}
+            zoom={view === '85' ? 0.85 : view === '75' ? 0.75 : 1}
+            comfortable={view === 'auto'}
+            responsive={automaticWidth.current && view !== 'page' && view !== 'actual'}
           >
             <ThemeProvider
               key={String(dark)}

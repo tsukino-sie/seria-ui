@@ -6,11 +6,15 @@ export default function PreviewCanvas({
   width = 900,
   mode = 'width',
   responsive = false,
+  zoom = 1,
+  comfortable = false,
 }: {
   children: ReactNode;
   width?: number;
   mode?: 'width' | 'page' | 'actual';
   responsive?: boolean;
+  zoom?: number;
+  comfortable?: boolean;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
@@ -39,12 +43,13 @@ export default function PreviewCanvas({
     return () => observer.disconnect();
   }, [width]);
   const layoutWidth = responsive ? Math.max(240, Math.min(width, size.availableWidth - 24)) : width;
+  const requestedScale = comfortable && size.availableWidth >= 560 ? 0.85 : zoom;
   const scale =
     mode !== 'actual'
       ? Math.max(
           0.1,
           Math.min(
-            1,
+            requestedScale,
             (size.availableWidth - 24) / layoutWidth,
             mode === 'page' ? (size.availableHeight - 24) / Math.max(1, size.height) : 1,
           ),

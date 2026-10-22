@@ -1,25 +1,31 @@
 export type SectionBounds = { top: number; bottom: number };
 
-/** Only settle near an edge. The middle of a long section stays freely scrollable. */
+/** One gesture advances in its direction, including when starting between sections. */
 export function sectionDestination(
   position: number,
   sections: SectionBounds[],
   viewport: number,
   header: number,
   maximum: number,
+  direction: 1 | -1,
 ): number | null {
   const available = Math.max(1, viewport - header);
-  const reach = Math.min(260, available * 0.32);
   const edges = sections.flatMap(({ top, bottom }) => {
     const start = Math.max(0, Math.min(maximum, top - header));
-    return bottom - top > available + 2
-      ? [start, Math.max(0, Math.min(maximum, bottom - viewport))]
-      : [start];
+    const end = Math.max(start, Math.min(maximum, bottom - viewport));
+    const stops = [start];
+    // Small overflow is visible on the way to the next section; avoid an extra
+    // gesture just to advance a handful of pixels. Long content remains readable.
+    if (end - start > Math.max(96, available * 0.18)) {
+      for (let next = start + available; next < end - 64; next += available) stops.push(next);
+      stops.push(end);
+    }
+    return stops;
   });
-  const closest = edges.sort((a, b) => Math.abs(a - position) - Math.abs(b - position))[0];
-  if (closest === undefined) return null;
-  const distance = Math.abs(closest - position);
-  return distance > 2 && distance <= reach ? closest : null;
+  const sorted = Array.from(new Set(edges)).sort((a, b) => a - b);
+  return direction > 0
+    ? (sorted.find((edge) => edge > position + 8) ?? null)
+    : (sorted.reverse().find((edge) => edge < position - 8) ?? null);
 }
 
 /** Zero velocity at both ends, without an overshoot or an abrupt final correction. */

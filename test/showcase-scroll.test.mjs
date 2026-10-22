@@ -17,16 +17,43 @@ const sections = [
   { top: 1736, bottom: 3400 },
   { top: 3400, bottom: 4236 },
 ];
-const destination = (position) => sectionDestination(position, sections, 900, 64, 3336);
+const destination = (position, direction = 1) =>
+  sectionDestination(position, sections, 900, 64, 3336, direction);
 
-test('section settling is local and leaves the middle of tall content readable', () => {
+test('a small forward gesture never returns to the section it came from', () => {
+  assert.equal(destination(1), 836);
   assert.equal(destination(700), 836);
-  assert.equal(destination(1000), 836);
-  assert.equal(destination(400), null);
-  assert.equal(destination(2050), null);
+  assert.equal(destination(400), 836);
+  assert.equal(destination(1000), 1672);
+  assert.equal(destination(1000, -1), 836);
+  assert.equal(destination(400, -1), 0);
+  assert.equal(destination(0, -1), null);
+});
+
+test('long sections advance through readable viewport-sized portions', () => {
+  assert.equal(destination(1672), 2500);
+  assert.equal(destination(2050), 2500);
   assert.equal(destination(2380), 2500);
+  assert.equal(destination(2500, -1), 1672);
   assert.equal(destination(3336), null);
-  assert.equal(sectionDestination(120, [], 900, 64, 2000), null);
+  assert.equal(sectionDestination(120, [], 900, 64, 2000, 1), null);
+});
+
+test('small mobile overflow does not require another gesture for a few pixels', () => {
+  assert.equal(
+    sectionDestination(
+      0,
+      [
+        { top: 64, bottom: 852 },
+        { top: 852, bottom: 1632 },
+      ],
+      844,
+      64,
+      788,
+      1,
+    ),
+    788,
+  );
 });
 
 test('section motion approaches both ends gently without reversing or overshooting', () => {
