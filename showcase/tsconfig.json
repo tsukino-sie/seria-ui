@@ -1,0 +1,5 @@
+{
+  "extends": "../demo/tsconfig.json",
+  "compilerOptions": { "paths": { "seria-ui": ["../src/index.tsx"] } },
+  "include": ["./**/*.tsx", "../src", "../examples"]
+}

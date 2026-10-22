@@ -25,6 +25,7 @@ export function ThemeProvider({
   accent,
   themes,
   style,
+  surface = 'canvas',
 }: {
   children: ReactNode;
   storageKey?: string;
@@ -32,6 +33,8 @@ export function ThemeProvider({
   accent?: string;
   themes?: Partial<Record<'light' | 'dark', ThemeTokens>>;
   style?: ThemeTokens;
+  /** Use inherit when adding components to an existing page. */
+  surface?: 'canvas' | 'inherit';
 }) {
   const [theme, setPreference] = useState<Theme>(() => {
     try {
@@ -78,6 +81,7 @@ export function ThemeProvider({
     <Context.Provider value={{ theme, resolved, setTheme, style: mergedStyle }}>
       <div
         className="pui-theme"
+        data-pui-surface={surface}
         data-pui-theme={resolved}
         data-seria-ui={SERIA_VERSION}
         data-seria-author="Sie"

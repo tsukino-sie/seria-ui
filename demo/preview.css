@@ -1,3 +1,8 @@
+/* Demo application font choice; not part of Seria UI. */
+body {
+  font-family: system-ui, sans-serif;
+}
+
 .demo-nav {
   display: flex;
   flex-direction: column;

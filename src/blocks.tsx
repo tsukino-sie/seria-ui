@@ -11,6 +11,19 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, CloseButton } from '@
 import { useThemeScope } from './theme.js';
 
 type Glass = 'soft' | 'clear' | false;
+export type HeroProps = Omit<HTMLAttributes<HTMLElement>, 'title'> & {
+  eyebrow?: string;
+  title: ReactNode;
+  description?: ReactNode;
+  actions?: ReactNode;
+  visual?: ReactNode;
+  headingLevel?: 1 | 2 | 3;
+  align?: 'start' | 'center';
+  tone?: 'plain' | 'ambient' | 'transparent';
+  /** Split reflows using the available space, including inside a narrow panel. */
+  layout?: 'stack' | 'split';
+  glass?: Glass;
+};
 export function Hero({
   eyebrow,
   title,
@@ -19,26 +32,32 @@ export function Hero({
   visual,
   children,
   headingLevel = 1,
+  align = 'center',
+  tone = 'plain',
+  layout = 'stack',
+  glass = false,
   className = '',
   ...props
-}: Omit<HTMLAttributes<HTMLElement>, 'title'> & {
-  eyebrow?: string;
-  title: ReactNode;
-  description?: ReactNode;
-  actions?: ReactNode;
-  visual?: ReactNode;
-  headingLevel?: 1 | 2;
-}) {
-  const Heading = headingLevel === 1 ? 'h1' : 'h2';
+}: HeroProps) {
+  const Heading = headingLevel === 1 ? 'h1' : headingLevel === 2 ? 'h2' : 'h3';
   return (
-    <section {...props} className={`pui-hero ${className}`}>
-      <div className="pui-hero-copy">
-        {eyebrow && <p className="pui-eyebrow">{eyebrow}</p>}
-        <Heading>{title}</Heading>
-        {description && <p className="pui-hero-description">{description}</p>}
-        {actions && <div className="pui-actions">{actions}</div>}
+    <section
+      {...props}
+      data-align={align}
+      data-tone={tone}
+      data-layout={visual ? layout : 'stack'}
+      data-glass={glass || undefined}
+      className={`pui-hero ${className}`}
+    >
+      <div className="pui-hero-body">
+        <div className="pui-hero-copy">
+          {eyebrow && <p className="pui-eyebrow">{eyebrow}</p>}
+          <Heading>{title}</Heading>
+          {description && <p className="pui-hero-description">{description}</p>}
+          {actions && <div className="pui-actions">{actions}</div>}
+        </div>
+        {children && <div className="pui-hero-content">{children}</div>}
       </div>
-      {children && <div className="pui-hero-content">{children}</div>}
       {visual && <div className="pui-hero-visual">{visual}</div>}
     </section>
   );
@@ -55,6 +74,7 @@ export function FeatureBlock({
   span = 'normal',
   tone = 'neutral',
   glass = false,
+  headingLevel = 2,
   className = '',
   ...props
 }: Omit<HTMLAttributes<HTMLElement>, 'title'> & {
@@ -65,7 +85,9 @@ export function FeatureBlock({
   span?: 'normal' | 'wide';
   tone?: 'neutral' | 'accent' | 'inset';
   glass?: Glass;
+  headingLevel?: 2 | 3;
 }) {
+  const Heading = headingLevel === 3 ? 'h3' : 'h2';
   return (
     <article
       {...props}
@@ -76,7 +98,7 @@ export function FeatureBlock({
     >
       <div className="pui-feature-heading">
         {eyebrow && <p className="pui-eyebrow">{eyebrow}</p>}
-        <h2>{title}</h2>
+        <Heading>{title}</Heading>
         {description && <p className="pui-muted">{description}</p>}
       </div>
       {children && <div className="pui-feature-content">{children}</div>}

@@ -1,6 +1,85 @@
-# Seria UI 1.3 · 확인 기록
+# Seria UI · 확인 기록
 
-2026-10-21 기준이에요.
+## Reusable compositions and synchronized distribution — 1.6.0 (2026-10-22)
+
+- `npm run check`: library, demo, showcase and example types; light/dark contrast passed.
+- `npm test`: seven tests passed, including caller content, heading hierarchy, image descriptions and unique section names.
+- `npm run test:consumer`: actual tgz installed in isolated React 19 and React 18.3 projects; both example projects passed TypeScript and production builds without source aliases or showcase CSS.
+- Browser: 390px mobile, narrow preview, dark mode, example save action, real source selection, forward/backward chapter navigation and continuous demo visibility checked. Main example opacity stays 1 during scene changes.
+- Existing-page fixture: heading, paragraph, link and input retained the exact computed font family, font size, color, margin and line height inside `surface="inherit"`.
+- Downloaded starter includes source, image and package; generated archives exclude node_modules, build output and stale lockfiles. `release.json` records package/starter SHA-256.
+- Public APIs: Hero layout/glass, PageSection, MediaFrame and typed props. Example art direction remains editable in examples/.
+- GitHub and hosted deployment are finalized only after these checks. Karem's application files are not changed by this release.
+
+최근 확인은 2026-10-22이며, 이전 버전의 기록은 아래에 보존해요.
+
+## 소개 문구와 제목 겹침 수정 (2026-10-22)
+
+- 메인 제목을 '단순하게, 깔끔하게.'로 바꾸고 단순하게·유연하게·선명하게·나답게·자연스럽게의 다섯 설명과 탐색 라벨을 같은 흐름으로 정리했어요.
+- 중간 너비에서 고정된 그리드 행보다 예시 창이 커져 제목 설명 위로 올라오던 문제를 수정했어요. 예시 창의 높이를 담는 행과 설명 행에 각각 최소 공간을 확보하고, 화면이 짧아져도 제목과 예시 영역을 압축하지 않아요. 큰 제목의 자간도 완화했어요.
+- 1440×900, 1200×720, 1024×700, 731×860, 320×800에서 제목과 예시 사이 간격이 약 35~48px이며 가로 넘침이 없는 것을 확인했어요. 320px에서 다섯 장면을 모두 선택해 문구와 예시·설명 간격이 겹치지 않는 것을 확인했어요.
+- 서체는 기존 사이트 설정을 유지하며 공통 Seria 컴포넌트와 재생 로직은 변경하지 않았어요. 타입 검사가 통과했어요.
+
+## 1.5.1 · 직접 재생 수정과 새 편집형 예시 (2026-10-22)
+
+- 모션 감소 설정에서 공통 컨트롤의 재생 버튼을 비활성화하고 호스트 타이머까지 차단하던 동작을 수정했어요. 기본 자동 시작은 억제하지만 사용자가 누른 재생은 허용해요. CSS의 장식적인 페이드·이동 감소는 유지해요.
+- 소개 페이지는 사용자가 요청한 진입 시 자동 재생을 적용하기 위해 respectReducedMotion=false를 명시해요. 시스템 모션 감소는 CSS 전환 효과에만 적용하며 콘텐츠 순차 재생과 재생/정지는 유지해요. 공통 컴포넌트의 기본 정책은 자동 시작 억제·직접 재생 허용이에요.
+- 최종 소개 페이지를 모션 감소=true인 앱 브라우저에서 새로고침한 직후 playing=true·버튼 활성화·0번 장면을 확인했고, 추가 입력 없이 진행률 증가와 4번 장면까지의 자동 전환을 확인했어요.
+- 실제 모션 감소가 true인 앱 브라우저에서 재생 버튼 활성화, 클릭 후 진행률 증가·장면 변경·끝 구간에서 다시 순환 및 일시 정지를 확인했어요. 갤러리의 같은 공통 컨트롤에서도 직접 재생과 진행률 갱신을 확인했어요.
+- 모션 감소가 false인 Chrome에서는 진입 후 자동 시작과 장면 전환이 계속 동작했고 확인한 흐름에서 브라우저 오류·경고 로그는 없었어요.
+- 메인과 서비스 소개 예시를 Seria / Spaces 가상 페이지로 교체했어요. 프로젝트에 저장한 전용 AI 이미지와 제목·소재·디자인 노트를 구성하고 기존 '모아' 이름을 제거했어요. 320px에서 사진 로드·페이지와 내부 가로 넘침, 강조색·간격 변경, 예시 작업 열기·Escape로 닫기를 확인했어요.
+- 1440×900 화면에서 예시 전체 내용과 재생 컨트롤이 첫 화면 안에 표시됐어요. 모바일 모양의 예시 안에서는 독립적으로 세로 스크롤할 수 있어요. 실제 터치 기기 검사는 하지 않았어요.
+- 타입·기본 대비 검사와 기존 자동 검증 5개가 통과했어요. 폰트 선택은 계속 사이트와 사용하는 프로젝트의 책임이에요.
+- 형식 검사와 패널·쇼케이스 정적 빌드, 공통 컴포넌트 수정이 포함된 1.5.1 패키지 생성도 통과했어요. 새 이미지 원본은 showcase/public/images/seria-space.png에 저장했어요.
+
+## 올리브 소개와 부드러운 장면 전환 (2026-10-22)
+
+- 소개 페이지의 기본색을 올리브로 바꾸고 연두·포레스트·세이지 선택을 제공해요. 메인 예시·진행 바·플레이그라운드·재생 예시와 라이트·다크 표면을 같은 계열로 맞췄어요. 공통 라이브러리의 기본 팔레트와 서체 정책은 유지해요.
+- 이전 내용을 220ms 동안 페이드아웃한 뒤 교체하고 520ms에 걸쳐 나타내요. 페이지의 위치·너비는 기존 슬라이드 전환과 함께 이동해요. 연속 선택은 앞선 교체 예약을 해제하고 마지막 요청으로 이어져요.
+- 일반 모션 환경의 Chrome에서 자동 재생과 구간 이동, 교체 전 leaving 상태·220ms 전환 및 완료 후 새 내용·opacity 1·520ms 진입 설정을 확인했어요. 모션 감소가 활성화된 앱 브라우저에서는 자동 재생이 꺼지고 수동 구간이 지연 없이 전환되는 것을 확인했어요.
+- 320px 화면에서 좁은 페이지 장면·초록 강조색 선택·라이트/다크 변경과 가로 넘침을 확인했어요. 넓은 화면에서도 장면 전환 후 가로 넘침이 없었고 브라우저 오류·경고 로그는 없었어요.
+- 쇼케이스의 두 테마에서 본문·설명 글자 대비는 4.5:1, 입력 경계는 3:1 이상이며 네 강조색의 accent-ink도 패널에서 4.5:1 이상임을 계산했어요. 타입·형식 검사와 쇼케이스 정적 빌드가 통과했어요.
+
+## 1.5 · 테마에 맞는 공통 재생 컨트롤 (2026-10-22)
+
+- 쇼케이스 전용 컨트롤을 공개 `PlaybackControls`로 옮겼어요. 안정적인 구간 id, 제어형 재생 상태·진행률·구간 선택, 탐색 중 일시 정지 알림, 라벨 번역과 TypeScript 타입을 제공해요.
+- 진행 색은 해당 테마의 accent-ink를 따라가요. fill·track·dot·배경·글자·경계·호버 토큰으로 개별 변경할 수 있어요. 중첩된 테마 구역에서 색을 계산해요.
+- 브라우저의 계산 스타일로 강조색 변경 전후 라이트·다크 진행 색이 다르게 반영되고, 개별 지정한 fill 색은 유지되는 것을 확인했어요.
+- 실제 재생 중 진행률과 구간이 바뀌고, 재생/정지·수동 구간 선택·방향키·Home/End·Escape가 동작하는 것을 확인했어요. 라이트·다크 인스턴스의 제목 id가 달라 접근성 설명 연결이 겹치지 않았어요.
+- 320px에서 제목·색상 선택·캡슐·펼쳐진 라벨을 확인했어요. 1440px과 1765px의 예시 3열 배치 및 페이지 가로 넘침도 확인했어요. 실제 터치 기기와 OS 모션 감소 설정 변경은 이번 검수에서 수행하지 않았어요.
+- 자동 검증은 폼 안에서 의도치 않은 제출 방지, 잘못된 진행률 제한, 빈 목록·사라진 구간·비활성 구간 처리와 라벨 번역을 포함해 총 5개가 통과했어요. 타입 검사와 기본 색상 대비 검사도 통과했어요.
+- 서체 선택·로드 정책은 동일해요. 공통 컴포넌트도 사용하는 프로젝트의 글꼴을 상속해요.
+- 형식 검사, 기존 패널과 쇼케이스 정적 빌드 및 1.5.0 패키지 생성을 확인했어요. 패키지에는 공개 컴포넌트·타입 선언·스타일·사용 문서가 포함되고 다운로드 요청은 200으로 응답했어요. 확인한 데스크톱 브라우저 흐름의 오류·경고 로그는 없었어요.
+
+## 자동 재생 메인과 통합 컨트롤
+
+- 스크롤로 설명을 따라가는 메인 대신, 같은 페이지가 4.4초마다 배치·표면·색상·반응형 장면으로 바뀌는 자동 소개를 구성했어요. 설명은 장면별 짧은 제목과 문장으로 표시해요.
+- 진행 막대, 장면 선택과 재생/정지를 하나의 캡슐에 배치했어요. 제목은 관심을 둔 항목에만 작은 라벨로 표시해요.
+- 브라우저에서 자동 전환, 수동 장면 선택, 일시 정지와 방향키 이동·제목 라벨 표시를 확인했어요. 터치의 첫 선택은 제목 표시, 두 번째 선택은 장면 이동으로 구현했으며 실제 터치 기기 검사는 하지 않았어요.
+- 320px·426px과 넓은 화면에서 가로 넘침을 확인했고, 320px에서 제목 라벨과 캡슐이 화면 안에 유지됐어요. 검수 흐름의 브라우저 오류·경고는 없었어요.
+- 화면 아래로 이동했을 때 자동 재생이 멈추고 첫 화면으로 돌아왔을 때 재개되는 것을 확인했어요.
+- 화면 밖·비활성 탭·장면 탐색 중에는 시간을 진행하지 않아요. 모션 감소 설정 시 자동 재생과 전환 효과를 끄는 분기를 포함했어요.
+- 라이브러리 기본 스타일과 서체 정책은 이번 메인 연출 변경에 포함하지 않았어요. 연출은 showcase/ 안에서 관리해요.
+
+## 1.4 · 조합 요소와 쇼케이스
+
+- Container, Stack, Cluster, Columns와 Hero의 표면·정렬, Card의 강조·높이, Button의 크기 선택을 추가했어요.
+- surface="inherit"에서 기존 제목·문단·링크·입력의 font-family, 크기, 행간, 색상, 위아래 margin, box-sizing, color-scheme이 적용 전과 같고 배경이 투명한 것을 Chrome의 계산 스타일로 비교했어요. 검증용 엔트리는 showcase/compatibility.html이며 프로덕션 빌드에서는 제외돼요.
+- 일반 요소의 일괄 초기화와 루트 color-scheme 지정을 제거했어요. Seria가 직접 렌더링하는 제목과 설명은 자체 규칙을 유지해요.
+- Chrome의 넓은 화면(계산 너비 1694px), 390px 화면과 앱 내 375px 화면에서 페이지 가로 넘침이 없는 것을 확인했어요.
+- 스크롤만으로 배치·표면·강조색 단계가 바뀌고, 모바일의 고정 미리보기와 설명이 함께 표시되는 것을 확인했어요. 모션 감소 시 전환 효과를 제거하는 CSS를 포함했어요.
+- 서비스 소개·콘텐츠·업무 구성 전환, 강조색 선택, 다크 테마, 시작 코드 생성, 예시 입력·확인·닫기를 브라우저에서 확인했어요. 확인한 흐름에서 브라우저 오류·경고 로그는 없었어요.
+- npm run check, npm run format:check, npm test(2개), npm run build:demo, npm run build:showcase와 1.4.0 패키지 생성을 확인했어요.
+- 모든 기존 사이트의 CSS, 브라우저와 보조 기술을 검증한 것은 아니에요. 적용할 프로젝트에서 실제 콘텐츠와 동작을 추가 확인해요.
+
+## 글꼴 책임 분리
+
+- 라이브러리의 고정 font-family와 글꼴 렌더링 보정을 제거했어요. 일반 화면과 포털은 상위 요소의 글꼴을 상속해요.
+- 예제의 시스템 글꼴 선택은 demo/preview.css로 옮겼어요. 기존 --pui-font 토큰은 더 이상 사용하지 않아요.
+- README와 토큰 문서에 프로젝트가 글꼴을 관리한다는 점과 포털 적용 방법을 명시했어요.
+- 변경 후 npm run check, npm test(2개), npm run build:demo가 통과했어요. 이번 변경의 브라우저 시각 검사는 수행하지 않았어요.
+
+## 기존 1.3 확인 기록
 
 - 독립 폴더에서 의존성을 설치하고 타입 검사, 대비 검사, 모듈·정적 예제 빌드를 확인했어요.
 - 기본 요소에 Button, Input, Card, Dialog, Dropdown을 포함했고 Card/Surface, Dialog/Modal 호환 이름을 유지했어요.

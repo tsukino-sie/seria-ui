@@ -15,6 +15,13 @@
   --pui-accent-hover: #8adbf4;
   --pui-accent-ink: #125a73;
   --pui-accent-soft: #eaf3f6;
+  --pui-ambient:
+    radial-gradient(
+      ellipse at 12% 80%,
+      color-mix(in srgb, var(--pui-accent) 22%, transparent),
+      transparent 65%
+    ),
+    linear-gradient(135deg, var(--pui-accent-soft), var(--pui-panel));
   --pui-success: #17634d;
   --pui-success-bg: #e3f4ed;
   --pui-warning: #79510a;
@@ -33,7 +40,14 @@
   --pui-sidebar-width: 264px;
   --pui-space-section: var(--pui-space-7);
   --pui-space-card: var(--pui-space-6);
-  --pui-font: ui-rounded, 'SUIT Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --pui-hero-padding: clamp(24px, 4vw, 48px);
+  --pui-hero-gap: clamp(24px, 4vw, 48px);
+  --pui-hero-title-size: clamp(28px, 4vw, 48px);
+  --pui-hero-ambient-title-size: clamp(32px, 5vw, 64px);
+  --pui-hero-description-size: var(--pui-text-lg);
+  --pui-hero-content-gap: var(--pui-space-7);
+  --pui-section-inset: clamp(20px, 4vw, 48px);
+  --pui-section-space: clamp(40px, 7vw, 88px);
   --pui-text-xs: 11px;
   --pui-text-sm: 13px;
   --pui-text-base: 14px;
@@ -61,7 +75,6 @@
   --pui-motion-distance: 4px;
   --pui-focus-width: 3px;
   --pui-focus-offset: 3px;
-  color-scheme: light;
 }
 :root.dark,
 :root[data-theme='dark'],
@@ -77,6 +90,13 @@
   --pui-accent: #6ccdee;
   --pui-accent-ink: #9fe0f6;
   --pui-accent-soft: #203e4c;
+  --pui-ambient:
+    radial-gradient(
+      ellipse at 12% 80%,
+      color-mix(in srgb, var(--pui-accent) 22%, transparent),
+      transparent 65%
+    ),
+    linear-gradient(135deg, var(--pui-accent-soft), var(--pui-panel));
   --pui-success: #a4e5cd;
   --pui-success-bg: #1b3b33;
   --pui-warning: #f5d08a;
@@ -89,4 +109,8 @@
   --pui-glass-clear: #19262fd6;
   --pui-shine: #ffffff16;
   color-scheme: dark;
+}
+
+[data-pui-theme='light'] {
+  color-scheme: light;
 }

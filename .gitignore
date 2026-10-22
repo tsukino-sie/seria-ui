@@ -6,3 +6,6 @@ preview/
 .DS_Store
 .env
 .env.*
+showcase-dist/
+showcase/public/downloads/
+.release/

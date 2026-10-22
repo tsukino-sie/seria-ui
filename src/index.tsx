@@ -25,7 +25,17 @@ export { createAccentTokens } from './brand.js';
 export { SERIA_VERSION } from './version.js';
 export type { Theme, ThemeTokens } from './theme.js';
 export { Hero, BlockGrid, FeatureBlock, MetricStrip, SiteShell } from './blocks.js';
+export type { HeroProps } from './blocks.js';
 export { Dropdown } from './dropdown.js';
+export { PlaybackControls } from './playback.js';
+export type {
+  PlaybackItem,
+  PlaybackControlsProps,
+  PlaybackControlsLabels,
+  PlaybackControlsStyle,
+} from './playback.js';
+export { Container, Stack, Cluster, Columns, PageSection, MediaFrame } from './layout.js';
+export type { PageSectionProps, MediaFrameProps, Space } from './layout.js';
 export type { DropdownItem } from './dropdown.js';
 export { Surface as Card, Modal as Dialog };
 export type Glass = 'soft' | 'clear' | false;
@@ -33,10 +43,25 @@ const classes = (...values: (string | undefined | false)[]) => values.filter(Boo
 type SurfaceProps = HTMLAttributes<HTMLElement> & {
   as?: 'section' | 'article' | 'div';
   glass?: Glass;
+  tone?: 'default' | 'subtle' | 'accent';
+  elevation?: 'flat' | 'raised';
 };
-export function Surface({ as: Tag = 'section', glass = false, className, ...props }: SurfaceProps) {
+export function Surface({
+  as: Tag = 'section',
+  glass = false,
+  tone = 'default',
+  elevation = 'flat',
+  className,
+  ...props
+}: SurfaceProps) {
   return (
-    <Tag {...props} data-glass={glass || undefined} className={classes('pui-surface', className)} />
+    <Tag
+      {...props}
+      data-tone={tone}
+      data-elevation={elevation}
+      data-glass={glass || undefined}
+      className={classes('pui-surface', className)}
+    />
   );
 }
 export function PageHeader({
@@ -130,14 +155,19 @@ export const Button = forwardRef<
   HTMLButtonElement,
   ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: 'primary' | 'secondary' | 'quiet' | 'danger';
+    size?: 'sm' | 'md' | 'lg';
   }
->(function Button({ variant = 'secondary', className, type = 'button', ...props }, ref) {
+>(function Button(
+  { variant = 'secondary', size = 'md', className, type = 'button', ...props },
+  ref,
+) {
   return (
     <button
       {...props}
       ref={ref}
       type={type}
       data-variant={variant}
+      data-size={size}
       className={classes('pui-button', className)}
     />
   );
