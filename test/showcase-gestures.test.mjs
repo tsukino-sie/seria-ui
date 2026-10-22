@@ -13,7 +13,10 @@ vm.runInNewContext(compile('../showcase/sectionPosition.ts'), position);
 
 // A deterministic event/animation clock exercises the real hook's gesture handling.
 // It does not replace browser layout, touch-device or visual verification.
-function fixture({ compact = false } = {}) {
+function fixture({
+  compact = false,
+  sections = [64, 821, 1578].map((top) => ({ top, bottom: top + 757 })),
+} = {}) {
   let clock = 0;
   let animationId = 0;
   let cleanup;
@@ -52,12 +55,12 @@ function fixture({ compact = false } = {}) {
   };
   const doc = {
     body,
-    documentElement: { scrollHeight: 2335 },
+    documentElement: { scrollHeight: sections.at(-1)?.bottom ?? 821, dataset: {} },
     querySelector: (selector) =>
       selector === '.studio-header' ? { getBoundingClientRect: () => ({ height: 64 }) } : null,
     querySelectorAll: () =>
-      [64, 821, 1578].map((top) => ({
-        getBoundingClientRect: () => ({ top: top - win.scrollY, bottom: top + 757 - win.scrollY }),
+      sections.map(({ top, bottom }) => ({
+        getBoundingClientRect: () => ({ top: top - win.scrollY, bottom: bottom - win.scrollY }),
       })),
     addEventListener: (name, listener) => listeners.set(name, listener),
     removeEventListener: (name) => listeners.delete(name),
@@ -85,6 +88,7 @@ function fixture({ compact = false } = {}) {
     const result = {
       target: body,
       defaultPrevented: false,
+      cancelable: true,
       button: 0,
       preventDefault() {
         this.defaultPrevented = true;
@@ -102,6 +106,7 @@ function fixture({ compact = false } = {}) {
   };
   return {
     win,
+    doc,
     body,
     frames,
     event,
@@ -191,9 +196,14 @@ test('touch scrolling is native and interrupts automatic section movement', () =
   f.cleanup();
 });
 
-test('compact screens allow native movement inside sections and across boundaries', () => {
-  const f = fixture({ compact: true });
-  for (const scrollY of [0, 350, 756, 760, 1000, 1514]) {
+const mobileSections = [
+  { top: 64, bottom: 1664 },
+  { top: 1664, bottom: 2421 },
+];
+
+test('compact screens allow native movement within long sections', () => {
+  const f = fixture({ compact: true, sections: mobileSections });
+  for (const scrollY of [100, 350, 600, 800]) {
     // Model the browser's native scroll position without implementing its physics.
     f.win.scrollY = scrollY;
     f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
@@ -214,8 +224,90 @@ test('compact screens allow native movement inside sections and across boundarie
   f.cleanup();
 });
 
+test('a new outward swipe at the edge advances one section and restores native snapping', () => {
+  const f = fixture({ compact: true, sections: mobileSections });
+  f.win.scrollY = 843;
+  f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
+  assert.equal(
+    f.event('touchmove', { touches: [{ clientX: 100, clientY: 260 }] }).defaultPrevented,
+    true,
+  );
+  assert.equal(f.doc.documentElement.dataset.sectionMotion, 'moving');
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 1600);
+  assert.equal(f.doc.documentElement.dataset.sectionMotion, undefined);
+  f.event('touchmove', { touches: [{ clientX: 100, clientY: 100 }] });
+  assert.equal(f.frames.size, 0);
+  f.event('touchend');
+  f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
+  f.event('touchmove', { touches: [{ clientX: 100, clientY: 340 }] });
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 843);
+  f.cleanup();
+});
+
+test('reading gestures stay native until release, even when reaching the section edge', () => {
+  const f = fixture({ compact: true, sections: mobileSections });
+  f.win.scrollY = 350;
+  f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
+  assert.equal(
+    f.event('touchmove', { touches: [{ clientX: 100, clientY: 260 }] }).defaultPrevented,
+    false,
+  );
+  f.win.scrollY = 843;
+  assert.equal(
+    f.event('touchmove', { touches: [{ clientX: 100, clientY: 100 }] }).defaultPrevented,
+    false,
+  );
+  assert.equal(f.frames.size, 0);
+  f.event('touchend');
+  f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
+  f.event('touchmove', { touches: [{ clientX: 100, clientY: 260 }] });
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 1600);
+  f.cleanup();
+});
+
+test('mobile nested readers, horizontal gestures and pinch zoom do not change sections', () => {
+  const f = fixture({ compact: true, sections: mobileSections });
+  f.win.scrollY = 843;
+  const reader = f.reader();
+  reader.style.overscrollBehaviorY = 'contain';
+  reader.scrollTop = 600;
+  const swipe = (target, touches) => {
+    f.event('touchstart', { target, touches: [{ clientX: 100, clientY: 300 }] });
+    return f.event('touchmove', { target, touches });
+  };
+  assert.equal(swipe(reader, [{ clientX: 100, clientY: 260 }]).defaultPrevented, false);
+  assert.equal(swipe(f.body, [{ clientX: 40, clientY: 290 }]).defaultPrevented, false);
+  assert.equal(
+    swipe(f.body, [
+      { clientX: 100, clientY: 260 },
+      { clientX: 200, clientY: 260 },
+    ]).defaultPrevented,
+    false,
+  );
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('mobile wheel and keyboard advance at boundaries and leave long content native', () => {
+  const f = fixture({ compact: true, sections: mobileSections });
+  f.win.scrollY = 350;
+  assert.equal(f.wheel(100).defaultPrevented, false);
+  assert.equal(f.event('keydown', { key: 'PageDown' }).defaultPrevented, false);
+  f.win.scrollY = 843;
+  assert.equal(f.wheel(20).defaultPrevented, true);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 1600);
+  assert.equal(f.event('keydown', { key: 'PageUp' }).defaultPrevented, true);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 843);
+  f.cleanup();
+});
+
 test('compact screens retain smooth navigation links and native input can cancel them', () => {
-  const f = fixture({ compact: true });
+  const f = fixture({ compact: true, sections: mobileSections });
   const anchor = f.reader();
   anchor.interactive = true;
   anchor.getAttribute = () => '#';

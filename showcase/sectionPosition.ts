@@ -1,5 +1,30 @@
 export type SectionBounds = { top: number; bottom: number };
 
+/** Long mobile sections are free to scroll; only an outward edge gesture changes sections. */
+export function sectionBoundaryDestination(
+  position: number,
+  sections: SectionBounds[],
+  viewport: number,
+  header: number,
+  maximum: number,
+  direction: 1 | -1,
+): number | null {
+  const ranges = sections.map(({ top, bottom }) => ({
+    start: Math.max(0, Math.min(maximum, top - header)),
+    end: Math.max(0, Math.min(maximum, bottom - viewport)),
+  }));
+  let index = ranges.length - 1;
+  while (index >= 0 && ranges[index].start > position + 2) index--;
+  const current = ranges[index];
+  if (!current) return null;
+  if (direction > 0) {
+    if (position < current.end - 10) return null;
+    return ranges[index + 1]?.start ?? null;
+  }
+  if (position > current.start + 10) return null;
+  return ranges[index - 1]?.end ?? null;
+}
+
 /** One gesture advances in its direction, including when starting between sections. */
 export function sectionDestination(
   position: number,

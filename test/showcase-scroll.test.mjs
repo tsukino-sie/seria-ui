@@ -7,7 +7,7 @@ const source = readFileSync(new URL('../showcase/sectionPosition.ts', import.met
 const { outputText } = ts.transpileModule(source, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
 });
-const { sectionDestination, sectionEase } = await import(
+const { sectionBoundaryDestination, sectionDestination, sectionEase } = await import(
   `data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`
 );
 
@@ -19,6 +19,18 @@ const sections = [
 ];
 const destination = (position, direction = 1) =>
   sectionDestination(position, sections, 900, 64, 3336, direction);
+
+test('mobile boundaries leave every interior position freely readable', () => {
+  for (const position of [1700, 1800, 2050, 2400, 2480]) {
+    assert.equal(sectionBoundaryDestination(position, sections, 900, 64, 3336, 1), null);
+    assert.equal(sectionBoundaryDestination(position, sections, 900, 64, 3336, -1), null);
+  }
+  assert.equal(sectionBoundaryDestination(2500, sections, 900, 64, 3336, 1), 3336);
+  assert.equal(sectionBoundaryDestination(3336, sections, 900, 64, 3336, -1), 2500);
+  assert.equal(sectionBoundaryDestination(0, sections, 900, 64, 3336, -1), null);
+  assert.equal(sectionBoundaryDestination(3336, sections, 900, 64, 3336, 1), null);
+  assert.equal(sectionBoundaryDestination(0, [], 900, 64, 3336, 1), null);
+});
 
 test('a small forward gesture never returns to the section it came from', () => {
   assert.equal(destination(1), 836);

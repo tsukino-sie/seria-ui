@@ -1368,6 +1368,31 @@ svg {
   }
 }
 @media (max-width: 1000px) {
+  /* Oversized snap areas remain freely readable; only the section edges snap.
+     JS eases deliberate edge gestures with native snapping temporarily disabled. */
+  html:not([data-section-motion]) {
+    scroll-snap-type: y mandatory;
+  }
+  .showcase-section {
+    --studio-muted: color-mix(in srgb, var(--studio-ink) 82%, var(--studio-bg));
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  .playground-section.showcase-section {
+    background-color: color-mix(in srgb, var(--studio-bg) 68%, var(--studio-panel));
+  }
+  .playback-section.showcase-section {
+    background-color: color-mix(in srgb, var(--studio-bg) 86%, var(--studio-accent));
+  }
+  .principles-section.showcase-section {
+    background-color: color-mix(in srgb, var(--studio-bg) 72%, var(--studio-panel));
+  }
+  .start-section.showcase-section {
+    background-color: color-mix(in srgb, var(--studio-bg) 94%, var(--studio-accent));
+  }
+  .closing-section.showcase-section {
+    background-color: color-mix(in srgb, var(--studio-bg) 78%, var(--studio-panel));
+  }
   .studio-nav {
     padding: 0 24px;
   }
@@ -1648,7 +1673,8 @@ svg {
   :root {
     --studio-scale: 1;
   }
-  html {
+  html,
+  html:not([data-section-motion]) {
     scroll-snap-type: none;
   }
   .showcase-section {
