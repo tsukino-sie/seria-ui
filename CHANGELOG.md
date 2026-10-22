@@ -1,5 +1,10 @@
 # Changes
 
+## 1.8.1
+
+- Preserve the standard backdrop-filter declaration in optimized production CSS so glass blur and saturation controls work after deployment as they do during development.
+- Verify the generated consumer CSS in React 18.3 and React 19 builds to catch this regression before publishing.
+
 ## 1.8.0
 
 - A unified olive glass introduction and a viewport-sized live workbench. The document owns its continuous background; no fixed backdrop layer leaves blank areas in full-page captures.

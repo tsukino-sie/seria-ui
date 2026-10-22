@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { cpSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
+import assert from 'node:assert/strict';
 import path from 'node:path';
 
 const root = import.meta.dirname;
@@ -25,9 +26,23 @@ for (const file of files)
 const npm = (args, cwd) =>
   execFileSync(process.execPath, [process.env.npm_execpath, ...args], { cwd, stdio: 'inherit' });
 if (!process.env.npm_execpath) throw new Error('Run npm run test:consumer.');
+const verifyGlassBuild = (cwd) => {
+  const assets = path.join(cwd, 'dist', 'assets');
+  const css = readdirSync(assets)
+    .filter((file) => file.endsWith('.css'))
+    .map((file) => readFileSync(path.join(assets, file), 'utf8'))
+    .join('\n');
+  // A prefix-order regression left only the unsupported WebKit property after minification.
+  assert.match(
+    css,
+    /(?<![-\w])backdrop-filter:\s*blur\(var\(--pui-glass-blur/,
+    'The consumer production CSS must preserve adjustable, unprefixed glass filters.',
+  );
+};
 // Use the actual generated package, with no alias to src or access to showcase CSS.
 npm(['install', '--no-audit', '--no-fund'], starter);
 npm(['run', 'build'], starter);
+verifyGlassBuild(starter);
 const react18 = path.join(consumerRoot, 'react18');
 mkdirSync(react18, { recursive: true });
 for (const file of [
@@ -45,4 +60,5 @@ Object.assign(pkg.devDependencies, { '@types/react': '^18.3.0', '@types/react-do
 writeFileSync(path.join(react18, 'package.json'), JSON.stringify(pkg, null, 2));
 npm(['install', '--no-audit', '--no-fund'], react18);
 npm(['run', 'build'], react18);
+verifyGlassBuild(react18);
 console.log(`Seria ${version}: standalone React 19 and React 18.3 consumer builds passed.`);

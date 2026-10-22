@@ -68,11 +68,11 @@ npm run build
 npm pack
 ```
 
-사용할 React 프로젝트에서 생성된 `seria-ui-1.8.0.tgz`를 설치해요.
+사용할 React 프로젝트에서 생성된 `seria-ui-1.8.1.tgz`를 설치해요.
 React 18.3 이상 또는 19, Headless UI 2.2 이상과 함께 사용해요.
 
 ```sh
-npm install /path/to/seria-ui-1.8.0.tgz
+npm install /path/to/seria-ui-1.8.1.tgz
 ```
 
 ```tsx
