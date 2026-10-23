@@ -32,6 +32,17 @@ test('mobile boundaries leave every interior position freely readable', () => {
   assert.equal(sectionBoundaryDestination(0, [], 900, 64, 3336, 1), null);
 });
 
+test('boundary transitions never move against the requested direction, including resized sections', () => {
+  for (const viewport of [700, 900, 1100]) {
+    for (let y = 0; y <= 3336; y += 5) {
+      for (const direction of [-1, 1]) {
+        const target = sectionBoundaryDestination(y, sections, viewport, 64, 3336, direction);
+        assert.ok(target === null || direction * (target - y) > 0);
+      }
+    }
+  }
+});
+
 test('a small forward gesture never returns to the section it came from', () => {
   assert.equal(destination(1), 836);
   assert.equal(destination(700), 836);

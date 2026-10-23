@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { sectionBoundaryDestination, sectionDestination, sectionEase } from './sectionPosition';
 
-/** Mobile sections scroll freely inside; an outward edge gesture advances one section. */
+/** Native reading with deliberate edge transitions; direct input always takes priority. */
 export default function useSectionScroll() {
   useEffect(() => {
     let frame = 0;
@@ -9,8 +9,10 @@ export default function useSectionScroll() {
     let moving: 1 | -1 = 1;
     let wheelTotal = 0;
     let wheelDirection = 0;
-    let wheelLast = 0;
+    let wheelLast = -Infinity;
     let wheelConsumed = false;
+    let wheelNative = false;
+    let wheelDestination: number | null = null;
     let touch: {
       x: number;
       y: number;
@@ -40,9 +42,18 @@ export default function useSectionScroll() {
       moving = distance > 0 ? 1 : -1;
       const started = performance.now();
       const duration = reduced.matches ? 760 : 950;
+      let expectedPosition = from;
       const step = (now: number) => {
+        // Native scrollbar drags and browser focus scrolling do not always send
+        // pointer events to the page. Never overwrite a position they changed.
+        if (Math.abs(window.scrollY - expectedPosition) > 2) {
+          cancel();
+          resetWheel();
+          return;
+        }
         const progress = Math.min(1, (now - started) / duration);
         window.scrollTo({ top: from + distance * sectionEase(progress), behavior: 'instant' });
+        expectedPosition = window.scrollY;
         if (progress < 1) frame = window.requestAnimationFrame(step);
         else {
           animating = false;
@@ -51,12 +62,12 @@ export default function useSectionScroll() {
       };
       frame = window.requestAnimationFrame(step);
     };
-    const next = (direction: 1 | -1, position = window.scrollY) => {
+    const next = (direction: 1 | -1, position = window.scrollY, paging = false) => {
       const sections = Array.from(document.querySelectorAll('.showcase-section'), (section) => {
         const rect = section.getBoundingClientRect();
         return { top: rect.top + window.scrollY, bottom: rect.bottom + window.scrollY };
       });
-      return (compact.matches ? sectionBoundaryDestination : sectionDestination)(
+      return (paging ? sectionDestination : sectionBoundaryDestination)(
         position,
         sections,
         window.innerHeight,
@@ -66,6 +77,14 @@ export default function useSectionScroll() {
       );
     };
     const blocked = () => !!document.querySelector('[aria-modal="true"]');
+    const resetWheel = () => {
+      wheelTotal = 0;
+      wheelDirection = 0;
+      wheelLast = -Infinity;
+      wheelConsumed = false;
+      wheelNative = false;
+      wheelDestination = null;
+    };
     const nested = (target: EventTarget | null, direction: 1 | -1) => {
       if (!(target instanceof Element)) return false;
       for (
@@ -98,36 +117,40 @@ export default function useSectionScroll() {
         event.metaKey ||
         blocked() ||
         Math.abs(event.deltaY) <= Math.abs(event.deltaX)
-      )
-        return;
-      const direction = event.deltaY > 0 ? 1 : -1;
-      if (nested(event.target, direction)) {
+      ) {
         cancel();
-        wheelConsumed = false;
-        wheelTotal = 0;
+        resetWheel();
         return;
       }
+      const direction = event.deltaY > 0 ? 1 : -1;
       const now = performance.now();
-      if (now - wheelLast > 220 || direction !== wheelDirection) {
+      const idle = now - wheelLast > 240;
+      const newGesture = idle || direction !== wheelDirection;
+      const interrupted = animating && (newGesture || direction !== moving);
+      if (interrupted) cancel();
+      if (newGesture) {
         wheelTotal = 0;
         wheelConsumed = false;
+        // Once direct input interrupts a move, keep the whole burst native,
+        // including tiny direction changes produced by trackpad momentum.
+        const stayNative = interrupted || (!idle && wheelNative);
+        wheelDestination = stayNative ? null : next(direction);
+        wheelNative = stayNative || wheelDestination === null;
       }
       wheelDirection = direction;
       wheelLast = now;
-      const destination = next(direction);
-      if (compact.matches && destination === null && !wheelConsumed && !touch?.consumed) {
+      if (nested(event.target, direction)) {
         cancel();
+        wheelNative = true;
+        wheelConsumed = false;
         wheelTotal = 0;
         return;
       }
-      if (destination === null && !animating) {
-        wheelTotal = 0;
+      if (wheelConsumed) {
+        event.preventDefault();
         return;
       }
-      event.preventDefault();
-      // Momentum from the same gesture cannot skip a second section. A reversed
-      // gesture may immediately redirect an animation, without waiting for it.
-      if ((animating && direction === moving) || wheelConsumed) return;
+      if (wheelNative || wheelDestination === null) return;
       const delta =
         event.deltaMode === 1
           ? event.deltaY * 16
@@ -135,14 +158,20 @@ export default function useSectionScroll() {
             ? event.deltaY * window.innerHeight
             : event.deltaY;
       wheelTotal += Math.abs(delta);
-      if (wheelTotal < 18 || destination === null) return;
+      // Small movements remain native instead of being swallowed. Only a clear
+      // outward gesture that started at an edge can request an automatic move.
+      if (wheelTotal < 40) return;
+      if (direction * (wheelDestination - window.scrollY) <= 2) {
+        wheelNative = true;
+        return;
+      }
+      event.preventDefault();
       wheelConsumed = true;
-      move(destination);
+      move(wheelDestination);
     };
     const touchStart = (event: TouchEvent) => {
       cancel();
-      wheelConsumed = false;
-      wheelTotal = 0;
+      resetWheel();
       const point = compact.matches && event.touches.length === 1 ? event.touches[0] : null;
       touch = point
         ? {
@@ -173,8 +202,8 @@ export default function useSectionScroll() {
           return;
         }
         const destination = next(direction, touch.position);
-        // Decide once, from where this gesture began. Reading gestures stay native
-        // even if their momentum reaches the edge; CSS snapping contains the boundary.
+        // Decide once, from where this gesture began. Reading gestures remain
+        // native; an interrupted gesture is never pulled back to a snap position.
         if (destination === null) {
           touch = null;
           return;
@@ -196,14 +225,21 @@ export default function useSectionScroll() {
     };
     const down = () => {
       cancel();
+      resetWheel();
     };
     const key = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         cancel();
+        resetWheel();
         return;
       }
       if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || blocked())
         return;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        cancel();
+        resetWheel();
+        return;
+      }
       if (
         event.target instanceof Element &&
         event.target.closest(
@@ -212,20 +248,18 @@ export default function useSectionScroll() {
       )
         return;
       let direction: 1 | -1;
-      if (
-        ['ArrowDown', 'PageDown', 'End'].includes(event.key) ||
-        (event.key === ' ' && !event.shiftKey)
-      )
+      if (['PageDown', 'End'].includes(event.key) || (event.key === ' ' && !event.shiftKey))
         direction = 1;
-      else if (
-        ['ArrowUp', 'PageUp', 'Home'].includes(event.key) ||
-        (event.key === ' ' && event.shiftKey)
-      )
+      else if (['PageUp', 'Home'].includes(event.key) || (event.key === ' ' && event.shiftKey))
         direction = -1;
       else return;
       if (nested(event.target, direction)) return;
       const destination =
-        event.key === 'Home' ? 0 : event.key === 'End' ? maximum() : next(direction);
+        event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? maximum()
+            : next(direction, window.scrollY, !compact.matches);
       if (compact.matches && destination === null) {
         cancel();
         return;
@@ -236,8 +270,7 @@ export default function useSectionScroll() {
     };
     const resize = () => {
       cancel();
-      wheelConsumed = false;
-      wheelTotal = 0;
+      resetWheel();
       touch = null;
     };
     const link = (event: MouseEvent) => {

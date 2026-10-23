@@ -124,9 +124,9 @@ function fixture({
   };
 }
 
-test('wheel starts immediately and one momentum gesture cannot skip two sections', () => {
+test('a deliberate edge gesture starts once and momentum cannot skip two sections', () => {
   const f = fixture();
-  assert.equal(f.wheel(20).defaultPrevented, true);
+  assert.equal(f.wheel(60).defaultPrevented, true);
   assert.equal(f.frames.size, 1);
   for (let i = 0; i < 10; i++) {
     f.tick(100);
@@ -135,33 +135,41 @@ test('wheel starts immediately and one momentum gesture cannot skip two sections
   assert.equal(f.win.scrollY, 757);
   assert.equal(f.frames.size, 0);
   f.tick(300);
-  f.wheel(20);
+  f.wheel(60);
   f.tick(1000);
   assert.equal(f.win.scrollY, 1514);
   f.cleanup();
 });
 
-test('reversing a wheel gesture redirects an in-progress move', () => {
+test('even a one-pixel reverse input immediately cancels movement without a rebound', () => {
   const f = fixture();
   f.wheel(100);
   f.tick(400);
   assert.ok(f.win.scrollY > 0 && f.win.scrollY < 757);
-  f.wheel(-100);
+  assert.equal(f.wheel(-1).defaultPrevented, false);
+  assert.equal(f.frames.size, 0);
+  f.win.scrollY -= 1;
+  f.tick(20);
+  assert.equal(f.wheel(1).defaultPrevented, false);
+  f.tick(20);
+  assert.equal(f.wheel(-60).defaultPrevented, false);
+  f.win.scrollY -= 60;
+  const nativePosition = f.win.scrollY;
   f.tick(1000);
-  assert.equal(f.win.scrollY, 0);
+  assert.equal(f.win.scrollY, nativePosition);
   f.cleanup();
 });
 
-test('a gesture from between sections continues in its direction without an idle timer', () => {
+test('small edge input remains native until a deliberate gesture is established', () => {
   const f = fixture();
-  f.win.scrollY = 350;
-  f.wheel(20);
-  assert.equal(f.frames.size, 1);
+  assert.equal(f.wheel(10).defaultPrevented, false);
+  f.win.scrollY = 10;
+  assert.equal(f.wheel(15).defaultPrevented, false);
+  f.win.scrollY = 25;
+  assert.equal(f.frames.size, 0);
+  assert.equal(f.wheel(15).defaultPrevented, true);
   f.tick(1000);
   assert.equal(f.win.scrollY, 757);
-  f.wheel(-20);
-  f.tick(1000);
-  assert.equal(f.win.scrollY, 0);
   f.cleanup();
   assert.equal(f.frames.size, 0);
 });
@@ -224,7 +232,7 @@ test('compact screens allow native movement within long sections', () => {
   f.cleanup();
 });
 
-test('a new outward swipe at the edge advances one section and restores native snapping', () => {
+test('a new outward swipe at the edge advances one section and clears its motion state', () => {
   const f = fixture({ compact: true, sections: mobileSections });
   f.win.scrollY = 843;
   f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
@@ -297,7 +305,8 @@ test('mobile wheel and keyboard advance at boundaries and leave long content nat
   assert.equal(f.wheel(100).defaultPrevented, false);
   assert.equal(f.event('keydown', { key: 'PageDown' }).defaultPrevented, false);
   f.win.scrollY = 843;
-  assert.equal(f.wheel(20).defaultPrevented, true);
+  f.tick(300);
+  assert.equal(f.wheel(60).defaultPrevented, true);
   f.tick(1000);
   assert.equal(f.win.scrollY, 1600);
   assert.equal(f.event('keydown', { key: 'PageUp' }).defaultPrevented, true);
@@ -333,5 +342,66 @@ test('form keys keep their own behavior', () => {
   input.interactive = true;
   assert.equal(f.event('keydown', { key: 'ArrowDown', target: input }).defaultPrevented, false);
   assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('desktop reading remains native for a whole gesture, including when it reaches the edge', () => {
+  const f = fixture({ sections: mobileSections });
+  f.win.scrollY = 350;
+  assert.equal(f.wheel(100).defaultPrevented, false);
+  f.win.scrollY = 843;
+  assert.equal(f.wheel(100).defaultPrevented, false);
+  assert.equal(f.frames.size, 0);
+  f.tick(300);
+  assert.equal(f.wheel(60).defaultPrevented, true);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 1600);
+  f.cleanup();
+});
+
+test('arrow keys and a scrollbar drag cancel immediately without later correction', () => {
+  const f = fixture();
+  f.wheel(100);
+  f.tick(400);
+  assert.equal(f.event('keydown', { key: 'ArrowUp' }).defaultPrevented, false);
+  f.win.scrollY -= 40;
+  const arrowPosition = f.win.scrollY;
+  f.tick(1500);
+  assert.equal(f.win.scrollY, arrowPosition);
+  assert.equal(f.frames.size, 0);
+  f.win.scrollY = 0;
+  f.wheel(100);
+  f.tick(400);
+  f.event('pointerdown');
+  f.win.scrollY = 1100;
+  f.tick(1500);
+  assert.equal(f.win.scrollY, 1100);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('a fresh wheel gesture during a transition takes control instead of queuing another move', () => {
+  const f = fixture();
+  f.wheel(100);
+  f.tick(400);
+  assert.equal(f.wheel(10).defaultPrevented, false);
+  const interrupted = f.win.scrollY;
+  f.tick(1500);
+  assert.equal(f.win.scrollY, interrupted);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('native scrollbar movement without a pointer event is never overwritten by the next frame', () => {
+  const f = fixture();
+  f.wheel(100);
+  f.tick(300);
+  f.win.scrollY = 1100;
+  f.tick(16);
+  assert.equal(f.win.scrollY, 1100);
+  assert.equal(f.frames.size, 0);
+  assert.equal(f.doc.documentElement.dataset.sectionMotion, undefined);
+  f.tick(1500);
+  assert.equal(f.win.scrollY, 1100);
   f.cleanup();
 });

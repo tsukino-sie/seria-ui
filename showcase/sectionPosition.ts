@@ -9,20 +9,22 @@ export function sectionBoundaryDestination(
   maximum: number,
   direction: 1 | -1,
 ): number | null {
-  const ranges = sections.map(({ top, bottom }) => ({
-    start: Math.max(0, Math.min(maximum, top - header)),
-    end: Math.max(0, Math.min(maximum, bottom - viewport)),
-  }));
+  const ranges = sections.map(({ top, bottom }) => {
+    const start = Math.max(0, Math.min(maximum, top - header));
+    return { start, end: Math.max(start, Math.min(maximum, bottom - viewport)) };
+  });
   let index = ranges.length - 1;
   while (index >= 0 && ranges[index].start > position + 2) index--;
   const current = ranges[index];
   if (!current) return null;
   if (direction > 0) {
     if (position < current.end - 10) return null;
-    return ranges[index + 1]?.start ?? null;
+    const destination = ranges[index + 1]?.start;
+    return destination !== undefined && destination > position + 2 ? destination : null;
   }
   if (position > current.start + 10) return null;
-  return ranges[index - 1]?.end ?? null;
+  const destination = ranges[index - 1]?.end;
+  return destination !== undefined && destination < position - 2 ? destination : null;
 }
 
 /** One gesture advances in its direction, including when starting between sections. */
