@@ -11,6 +11,7 @@ const scenes = [
     detail: '누구나 쉽게,\n깔끔한 페이지를.',
     setting: 'Stack',
     value: 'gap={6}',
+    explanation: '요소 사이의 간격을 일정하게 맞춰요.',
     accent: '#68783e',
     focus: 'all',
   },
@@ -20,6 +21,7 @@ const scenes = [
     detail: '내용과 화면에 맞춰\n유연하게 바뀌는 페이지.',
     setting: 'Columns',
     value: 'min="12rem"',
+    explanation: '공간에 맞춰 열 수와 배치를 조절해요.',
     accent: '#68783e',
     focus: 'layout',
   },
@@ -29,6 +31,7 @@ const scenes = [
     detail: '빛과 색은 은은하고 자연스럽게.\n중요한 부분은 또렷하게.',
     setting: 'Hero',
     value: 'tone="ambient"',
+    explanation: '표면에 은은한 빛과 색을 더해요.',
     accent: '#68783e',
     focus: 'surface',
   },
@@ -38,6 +41,7 @@ const scenes = [
     detail: '글씨도 내용도,\n나다운 모습 그대로.',
     setting: 'ThemeProvider',
     value: 'accent="#99b44a"',
+    explanation: '강조색을 바꾸고, 글꼴과 내용은 그대로 둬요.',
     accent: '#99b44a',
     focus: 'brand',
   },
@@ -47,6 +51,7 @@ const scenes = [
     detail: '어떤 화면에서도,\n자유롭고 자연스럽게 이어지도록.',
     setting: 'Columns',
     value: 'min="12rem"',
+    explanation: '좁은 화면에서는 한 열로 자연스럽게 이어져요.',
     accent: '#99b44a',
     focus: 'responsive',
   },
@@ -210,65 +215,72 @@ export default function KeynoteHero({ dark = false }: { dark?: boolean }) {
       data-playing={playing}
       data-completed={completed}
     >
-      <div className="keynote-heading">
-        <p>Seria UI</p>
-        <h1 id="keynote-title">단순하게, 깔끔하게.</h1>
-        <span>누구나 쉽게, 나다운 페이지를.</span>
-      </div>
-      <div
-        className="keynote-stage"
-        data-transition={fading ? 'leaving' : 'visible'}
-        data-direction={direction}
-        role="group"
-        aria-label="자동으로 변화하는 Seria 페이지 소개"
-      >
-        <div className="keynote-stage-glow" aria-hidden="true" />
-        <DemoPage scene={scene} dark={dark} />
+      <div className="keynote-presentation">
+        <div className="keynote-heading">
+          <p>Seria UI</p>
+          <h1 id="keynote-title">단순하게, 깔끔하게.</h1>
+          <span>누구나 쉽게, 나다운 페이지를.</span>
+        </div>
         <div
-          key={presentedScene}
-          className={`keynote-callout keynote-callout-${presentedSlide.focus}`}
+          className="keynote-stage"
+          data-transition={fading ? 'leaving' : 'visible'}
+          data-direction={direction}
+          role="group"
+          aria-label="자동으로 변화하는 Seria 페이지 소개"
         >
-          <span className="keynote-callout-index">0{presentedScene + 1} / 05</span>
-          <h2>{presentedSlide.title}</h2>
-          <span className="keynote-callout-line" aria-hidden="true" />
-          <p>{presentedSlide.detail}</p>
-          <code>
-            &lt;{presentedSlide.setting} <strong>{presentedSlide.value}</strong> /&gt;
-          </code>
+          <div className="keynote-stage-glow" aria-hidden="true" />
+          <DemoPage scene={scene} dark={dark} />
+          <div
+            key={presentedScene}
+            className={`keynote-callout keynote-callout-${presentedSlide.focus}`}
+          >
+            <span className="keynote-callout-index">0{presentedScene + 1} / 05</span>
+            <h2>{presentedSlide.title}</h2>
+            <span className="keynote-callout-line" aria-hidden="true" />
+            <p>{presentedSlide.detail}</p>
+            <code aria-describedby={`keynote-setting-${presentedSlide.focus}`}>
+              &lt;{presentedSlide.setting} <strong>{presentedSlide.value}</strong> /&gt;
+            </code>
+            <p className="keynote-setting-note" id={`keynote-setting-${presentedSlide.focus}`}>
+              {presentedSlide.explanation}
+            </p>
+          </div>
         </div>
       </div>
-      <div className="keynote-controls">
-        <ThemeProvider
-          key={String(dark)}
-          defaultTheme={dark ? 'dark' : 'light'}
-          storageKey={`seria-keynote-controls-v18-${dark}`}
-          surface="inherit"
-          accent={slide.accent}
-          themes={studioThemes}
-        >
-          <PlaybackControls
-            items={scenes.map((item) => ({ id: item.focus, label: item.label }))}
-            activeId={slide.focus}
-            progress={progress}
-            playing={requested}
-            completed={completed}
-            onReplay={replay}
-            respectReducedMotion={false}
-            onPlayingChange={setRequested}
-            onActiveChange={(id) => choose(scenes.findIndex((item) => item.focus === id))}
-            onInteractionChange={setExploring}
-            aria-label="자동 소개 재생과 장면 이동"
-          />
-        </ThemeProvider>
-      </div>
-      <div className="keynote-bottom">
-        <a href="#playground">
-          직접 조합해 보기 <span aria-hidden="true">↗</span>
-        </a>
-        <a href="#start">
-          Seria 시작하기 <span aria-hidden="true">↓</span>
-        </a>
-      </div>
+      <footer className="keynote-footer">
+        <div className="keynote-controls">
+          <ThemeProvider
+            key={String(dark)}
+            defaultTheme={dark ? 'dark' : 'light'}
+            storageKey={`seria-keynote-controls-v18-${dark}`}
+            surface="inherit"
+            accent={slide.accent}
+            themes={studioThemes}
+          >
+            <PlaybackControls
+              items={scenes.map((item) => ({ id: item.focus, label: item.label }))}
+              activeId={slide.focus}
+              progress={progress}
+              playing={requested}
+              completed={completed}
+              onReplay={replay}
+              respectReducedMotion={false}
+              onPlayingChange={setRequested}
+              onActiveChange={(id) => choose(scenes.findIndex((item) => item.focus === id))}
+              onInteractionChange={setExploring}
+              aria-label="자동 소개 재생과 장면 이동"
+            />
+          </ThemeProvider>
+        </div>
+        <div className="keynote-bottom">
+          <a href="#playground">
+            직접 조합해 보기 <span aria-hidden="true">↗</span>
+          </a>
+          <a href="#start">
+            Seria 시작하기 <span aria-hidden="true">↓</span>
+          </a>
+        </div>
+      </footer>
     </section>
   );
 }
