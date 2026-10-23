@@ -22,6 +22,7 @@ export function sectionBoundaryDestination(
     const destination = ranges[index + 1]?.start;
     return destination !== undefined && destination > position + 2 ? destination : null;
   }
+  if (position > current.end + 10) return current.end;
   if (position > current.start + 10) return null;
   const destination = ranges[index - 1]?.end;
   return destination !== undefined && destination < position - 2 ? destination : null;

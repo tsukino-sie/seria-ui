@@ -43,6 +43,13 @@ test('boundary transitions never move against the requested direction, including
   }
 });
 
+test('boundary gaps respond in both directions without requiring an exact edge position', () => {
+  assert.equal(sectionBoundaryDestination(500, sections, 900, 64, 3336, 1), 836);
+  assert.equal(sectionBoundaryDestination(500, sections, 900, 64, 3336, -1), 0);
+  assert.equal(sectionBoundaryDestination(2800, sections, 900, 64, 3336, 1), 3336);
+  assert.equal(sectionBoundaryDestination(2800, sections, 900, 64, 3336, -1), 2500);
+});
+
 test('a small forward gesture never returns to the section it came from', () => {
   assert.equal(destination(1), 836);
   assert.equal(destination(700), 836);

@@ -21,6 +21,7 @@ function fixture({
   let animationId = 0;
   let cleanup;
   const frames = new Map();
+  const timers = new Map();
   const listeners = new Map();
   class Element {
     parentElement = null;
@@ -49,6 +50,12 @@ function fixture({
       return animationId;
     },
     cancelAnimationFrame: (id) => frames.delete(id),
+    setTimeout: (callback, delay) => {
+      const id = ++animationId;
+      timers.set(id, { callback, at: clock + delay });
+      return id;
+    },
+    clearTimeout: (id) => timers.delete(id),
     scrollTo: ({ top }) => {
       win.scrollY = top;
     },
@@ -100,6 +107,12 @@ function fixture({
   };
   const tick = (milliseconds) => {
     clock += milliseconds;
+    for (const [id, timer] of [...timers]) {
+      if (timer.at <= clock) {
+        timers.delete(id);
+        timer.callback();
+      }
+    }
     const pending = [...frames.values()];
     frames.clear();
     pending.forEach((callback) => callback(clock));
@@ -154,6 +167,7 @@ test('even a one-pixel reverse input immediately cancels movement without a rebo
   f.tick(20);
   assert.equal(f.wheel(-60).defaultPrevented, false);
   f.win.scrollY -= 60;
+  f.event('scrollend');
   const nativePosition = f.win.scrollY;
   f.tick(1000);
   assert.equal(f.win.scrollY, nativePosition);
@@ -162,12 +176,12 @@ test('even a one-pixel reverse input immediately cancels movement without a rebo
 
 test('small edge input remains native until a deliberate gesture is established', () => {
   const f = fixture();
-  assert.equal(f.wheel(10).defaultPrevented, false);
+  assert.equal(f.wheel(5).defaultPrevented, false);
+  f.win.scrollY = 5;
+  assert.equal(f.wheel(5).defaultPrevented, false);
   f.win.scrollY = 10;
-  assert.equal(f.wheel(15).defaultPrevented, false);
-  f.win.scrollY = 25;
   assert.equal(f.frames.size, 0);
-  assert.equal(f.wheel(15).defaultPrevented, true);
+  assert.equal(f.wheel(10).defaultPrevented, true);
   f.tick(1000);
   assert.equal(f.win.scrollY, 757);
   f.cleanup();
@@ -345,15 +359,13 @@ test('form keys keep their own behavior', () => {
   f.cleanup();
 });
 
-test('desktop reading remains native for a whole gesture, including when it reaches the edge', () => {
+test('desktop reading hands off automatically when the same wheel gesture reaches the edge', () => {
   const f = fixture({ sections: mobileSections });
   f.win.scrollY = 350;
   assert.equal(f.wheel(100).defaultPrevented, false);
   f.win.scrollY = 843;
-  assert.equal(f.wheel(100).defaultPrevented, false);
-  assert.equal(f.frames.size, 0);
-  f.tick(300);
-  assert.equal(f.wheel(60).defaultPrevented, true);
+  assert.equal(f.wheel(100).defaultPrevented, true);
+  assert.equal(f.frames.size, 1);
   f.tick(1000);
   assert.equal(f.win.scrollY, 1600);
   f.cleanup();
@@ -380,14 +392,13 @@ test('arrow keys and a scrollbar drag cancel immediately without later correctio
   f.cleanup();
 });
 
-test('a fresh wheel gesture during a transition takes control instead of queuing another move', () => {
+test('a same-direction wheel pulse keeps an automatic transition running', () => {
   const f = fixture();
   f.wheel(100);
   f.tick(400);
-  assert.equal(f.wheel(10).defaultPrevented, false);
-  const interrupted = f.win.scrollY;
+  assert.equal(f.wheel(10).defaultPrevented, true);
   f.tick(1500);
-  assert.equal(f.win.scrollY, interrupted);
+  assert.equal(f.win.scrollY, 757);
   assert.equal(f.frames.size, 0);
   f.cleanup();
 });
@@ -434,5 +445,87 @@ test('a browser-cancelled touch never leaves an automatic movement running', () 
   f.tick(1500);
   assert.equal(f.win.scrollY, stopped);
   assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('native momentum that finishes in the boundary gap continues forward automatically', () => {
+  const f = fixture({ sections: mobileSections });
+  f.win.scrollY = 800;
+  assert.equal(f.wheel(100).defaultPrevented, false);
+  f.win.scrollY = 900;
+  f.event('scrollend');
+  assert.equal(f.frames.size, 1);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 1600);
+  f.event('scrollend');
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('a mobile reading swipe hands off after native scrolling ends without another swipe', () => {
+  const f = fixture({ compact: true, sections: mobileSections });
+  f.win.scrollY = 350;
+  f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
+  assert.equal(
+    f.event('touchmove', { touches: [{ clientX: 100, clientY: 260 }] }).defaultPrevented,
+    false,
+  );
+  f.win.scrollY = 900;
+  assert.equal(
+    f.event('touchmove', { touches: [{ clientX: 100, clientY: 100 }] }).defaultPrevented,
+    false,
+  );
+  f.event('touchend');
+  f.event('scrollend');
+  assert.equal(f.frames.size, 1);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 1600);
+  f.cleanup();
+});
+
+test('settling leaves interior reading positions and tiny movements untouched', () => {
+  const f = fixture({ sections: mobileSections });
+  f.win.scrollY = 350;
+  f.wheel(100);
+  f.win.scrollY = 450;
+  f.event('scrollend');
+  f.tick(1500);
+  assert.equal(f.win.scrollY, 450);
+  assert.equal(f.frames.size, 0);
+  f.tick(300);
+  f.win.scrollY = 843;
+  f.wheel(5);
+  f.win.scrollY = 848;
+  f.event('scrollend');
+  f.tick(1500);
+  assert.equal(f.win.scrollY, 848);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('a scroll-end fallback handles browsers without scrollend and cannot chain another section', () => {
+  const f = fixture({ sections: mobileSections });
+  f.win.scrollY = 800;
+  f.wheel(100);
+  f.win.scrollY = 900;
+  f.event('scroll');
+  f.tick(139);
+  assert.equal(f.frames.size, 0);
+  f.tick(1);
+  assert.equal(f.frames.size, 1);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 1600);
+  f.event('scroll');
+  f.tick(1500);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('upward movement from a boundary gap automatically continues upward', () => {
+  const f = fixture({ sections: mobileSections });
+  f.win.scrollY = 1150;
+  assert.equal(f.wheel(-20).defaultPrevented, true);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 843);
   f.cleanup();
 });
