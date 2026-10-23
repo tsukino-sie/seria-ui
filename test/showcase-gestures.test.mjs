@@ -405,3 +405,34 @@ test('native scrollbar movement without a pointer event is never overwritten by 
   assert.equal(f.win.scrollY, 1100);
   f.cleanup();
 });
+
+test('reversing the finger within the same swipe stops the animation without another jump', () => {
+  const f = fixture({ compact: true, sections: mobileSections });
+  f.win.scrollY = 843;
+  f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
+  f.event('touchmove', { touches: [{ clientX: 100, clientY: 260 }] });
+  f.tick(300);
+  const interrupted = f.win.scrollY;
+  assert.equal(
+    f.event('touchmove', { touches: [{ clientX: 100, clientY: 280 }] }).defaultPrevented,
+    false,
+  );
+  f.tick(1500);
+  assert.equal(f.win.scrollY, interrupted);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('a browser-cancelled touch never leaves an automatic movement running', () => {
+  const f = fixture({ compact: true, sections: mobileSections });
+  f.win.scrollY = 843;
+  f.event('touchstart', { touches: [{ clientX: 100, clientY: 300 }] });
+  f.event('touchmove', { touches: [{ clientX: 100, clientY: 260 }] });
+  f.tick(300);
+  f.event('touchcancel');
+  const stopped = f.win.scrollY;
+  f.tick(1500);
+  assert.equal(f.win.scrollY, stopped);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});

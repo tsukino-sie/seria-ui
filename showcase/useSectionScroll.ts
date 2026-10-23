@@ -16,6 +16,7 @@ export default function useSectionScroll() {
     let touch: {
       x: number;
       y: number;
+      lastY: number;
       position: number;
       target: EventTarget | null;
       direction: 1 | -1 | null;
@@ -177,6 +178,7 @@ export default function useSectionScroll() {
         ? {
             x: point.clientX,
             y: point.clientY,
+            lastY: point.clientY,
             position: window.scrollY,
             target: event.target,
             direction: null,
@@ -188,12 +190,20 @@ export default function useSectionScroll() {
     const touchMove = (event: TouchEvent) => {
       if (!touch || blocked()) return;
       if (event.touches.length !== 1) {
+        cancel();
         touch = null;
         return;
       }
       const point = event.touches[0];
+      const stepDelta = touch.lastY - point.clientY;
+      touch.lastY = point.clientY;
       const delta = touch.y - point.clientY;
       const horizontal = Math.abs(touch.x - point.clientX);
+      if (touch.consumed && touch.direction && stepDelta * touch.direction < -3) {
+        cancel();
+        touch = null;
+        return;
+      }
       if (!touch.direction) {
         if (Math.max(Math.abs(delta), horizontal) < 4) return;
         const direction = delta > 0 ? 1 : -1;
@@ -222,6 +232,11 @@ export default function useSectionScroll() {
     };
     const touchEnd = () => {
       touch = null;
+    };
+    const touchCancel = () => {
+      touch = null;
+      cancel();
+      resetWheel();
     };
     const down = () => {
       cancel();
@@ -302,7 +317,7 @@ export default function useSectionScroll() {
     window.addEventListener('touchstart', touchStart, { passive: true });
     window.addEventListener('touchmove', touchMove, { passive: false });
     window.addEventListener('touchend', touchEnd, { passive: true });
-    window.addEventListener('touchcancel', touchEnd, { passive: true });
+    window.addEventListener('touchcancel', touchCancel, { passive: true });
     window.addEventListener('pointerdown', down, { passive: true });
     window.addEventListener('keydown', key);
     window.addEventListener('resize', resize);
@@ -313,7 +328,7 @@ export default function useSectionScroll() {
       window.removeEventListener('touchstart', touchStart);
       window.removeEventListener('touchmove', touchMove);
       window.removeEventListener('touchend', touchEnd);
-      window.removeEventListener('touchcancel', touchEnd);
+      window.removeEventListener('touchcancel', touchCancel);
       window.removeEventListener('pointerdown', down);
       window.removeEventListener('keydown', key);
       window.removeEventListener('resize', resize);
