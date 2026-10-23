@@ -16,7 +16,7 @@ import componentSource from '../examples/ComponentPage.tsx?raw';
 import spacesStyles from '../examples/spaces.css?raw';
 import themeSource from '../examples/theme.ts?raw';
 import { studioAccents, studioThemes } from './palette';
-import PreviewCanvas from './PreviewCanvas';
+import PreviewCanvas, { type PreviewMetrics } from './PreviewCanvas';
 
 const defaults = {
   opacity: 58,
@@ -29,6 +29,41 @@ const defaults = {
   width: 900,
 };
 type Material = 'glass' | 'solid' | 'open';
+function DeviceIcon({ device }: { device: 'auto' | 'desktop' | 'tablet' | 'phone' }) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {device === 'auto' ? (
+        <path d="M4 12h16m-4-4 4 4-4 4M8 8l-4 4 4 4" />
+      ) : device === 'desktop' ? (
+        <>
+          <rect x="3" y="4" width="18" height="13" rx="2" />
+          <path d="M8 21h8m-4-4v4" />
+        </>
+      ) : (
+        <>
+          <rect
+            x={device === 'phone' ? 7 : 5}
+            y="3"
+            width={device === 'phone' ? 10 : 14}
+            height="18"
+            rx="2"
+          />
+          <path d="M11 18h2" />
+        </>
+      )}
+    </svg>
+  );
+}
 function Setting({ title, children }: { title: string; children: ReactNode }) {
   return (
     <fieldset className="studio-setting">
@@ -70,6 +105,13 @@ export default function StudioPlayground({
   const [view, setView] = useState<'auto' | '85' | '75' | 'width' | 'page' | 'actual'>('auto');
   const [tab, setTab] = useState('layout');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [previewMetrics, setPreviewMetrics] = useState<PreviewMetrics>({
+    width: 900,
+    scale: 1,
+    overview: false,
+  });
+  const [widthDraft, setWidthDraft] = useState(String(settings.width));
+  useEffect(() => setWidthDraft(String(settings.width)), [settings.width]);
   const [codeOpen, setCodeOpen] = useState(false);
   const [file, setFile] = useState('main.tsx');
   const [copied, setCopied] = useState(false);
@@ -216,6 +258,14 @@ export default function Page() {
     setEffects(true);
     setView('auto');
   };
+  const commitWidth = () => {
+    const value = Number(widthDraft);
+    if (widthDraft.trim() && Number.isFinite(value)) {
+      const width = Math.max(280, Math.min(1440, Math.round(value / 10) * 10));
+      update('width', width);
+      setWidthDraft(String(width));
+    } else setWidthDraft(String(settings.width));
+  };
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(files[file]);
@@ -234,7 +284,11 @@ export default function Page() {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   return (
-    <section id="playground" className="playground-section showcase-section">
+    <section
+      id="playground"
+      className="playground-section showcase-section"
+      data-settings-open={settingsOpen}
+    >
       <div className="playground-content">
         <header className="playground-heading">
           <div>
@@ -248,17 +302,17 @@ export default function Page() {
           </span>
         </header>
         <div className="studio-workbench" data-settings-open={settingsOpen}>
-          <aside className="studio-controls" aria-label="미리보기 설정">
+          <aside className="studio-controls" id="playground-settings" aria-label="미리보기 설정">
             <div className="studio-controls-title">
-              <strong>나의 페이지</strong>
-              <button type="button" onClick={reset}>
+              <strong>페이지 설정</strong>
+              <button type="button" onClick={reset} aria-label="설정 초기화">
                 초기화 ↺
               </button>
             </div>
             <div className="settings-tabs" role="group" aria-label="설정 분류">
               {[
                 ['layout', '구성'],
-                ['surface', '재질·색'],
+                ['surface', '표면·색'],
                 ['details', '세부'],
               ].map(([id, label]) => (
                 <button type="button" key={id} aria-pressed={tab === id} onClick={() => setTab(id)}>
@@ -350,9 +404,20 @@ export default function Page() {
                       (id) => setMaterial(id as Material),
                     )}
                   </Setting>
-                  {range('opacity', '표면 농도', 20, 95, '%')}
-                  {range('blur', '흐림', 0, 40, 'px')}
-                  {range('saturation', '색의 깊이', 80, 180, '%')}
+                  <fieldset
+                    className="glass-settings"
+                    disabled={!effects || material !== 'glass'}
+                    aria-label="유리 질감 조정"
+                  >
+                    {range('opacity', '표면 농도', 20, 95, '%')}
+                    {range('blur', '흐림', 0, 40, 'px')}
+                    {range('saturation', '색의 깊이', 80, 180, '%')}
+                  </fieldset>
+                  {(!effects || material !== 'glass') && (
+                    <p className="settings-hint">
+                      유리 표면과 효과를 켜면 질감을 조정할 수 있어요.
+                    </p>
+                  )}
                   <Setting title="강조색">
                     <div className="studio-color-choices">
                       {studioAccents.map((color) => (
@@ -422,10 +487,11 @@ export default function Page() {
                       min={280}
                       max={1440}
                       step={10}
-                      value={settings.width}
-                      onChange={(event) => {
-                        const n = Number(event.target.value);
-                        if (Number.isFinite(n)) update('width', Math.max(280, Math.min(1440, n)));
+                      value={widthDraft}
+                      onChange={(event) => setWidthDraft(event.target.value)}
+                      onBlur={commitWidth}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') event.currentTarget.blur();
                       }}
                     />
                     <span>px</span>
@@ -437,34 +503,34 @@ export default function Page() {
           </aside>
           <div className="preview-panel">
             <div className="preview-toolbar">
-              <span className="window-dots" aria-hidden="true">
+              <span className="preview-name">
                 <i />
-                <i />
-                <i />
+                미리보기
               </span>
-              <span className="preview-name">seria / {composition}</span>
               <div className="viewport-toggle" role="group" aria-label="미리보기 너비">
                 <button
                   type="button"
                   aria-label="자동 너비"
+                  title="화면에 맞는 자동 너비"
                   aria-pressed={automaticWidth.current}
                   onClick={useAutomaticWidth}
                 >
-                  ↔
+                  <DeviceIcon device="auto" />
                 </button>
                 {[
-                  [900, '넓은 화면', '▱'],
-                  [640, '태블릿 너비', '▯'],
-                  [360, '모바일 너비', '▯'],
-                ].map(([value, label, mark]) => (
+                  [900, '넓은 화면', 'desktop'],
+                  [640, '태블릿 너비', 'tablet'],
+                  [360, '모바일 너비', 'phone'],
+                ].map(([value, label, device]) => (
                   <button
                     type="button"
                     key={value}
                     aria-label={String(label)}
+                    title={String(label)}
                     aria-pressed={!automaticWidth.current && settings.width === value}
                     onClick={() => update('width', Number(value))}
                   >
-                    {mark}
+                    <DeviceIcon device={device as 'desktop' | 'tablet' | 'phone'} />
                   </button>
                 ))}
               </div>
@@ -506,9 +572,10 @@ export default function Page() {
                 type="button"
                 className="mobile-settings-toggle"
                 aria-expanded={settingsOpen}
+                aria-controls="playground-settings"
                 onClick={() => setSettingsOpen(!settingsOpen)}
               >
-                {settingsOpen ? '미리보기' : '설정'}
+                {settingsOpen ? '닫기' : '설정'}
               </button>
             </div>
             <PreviewCanvas
@@ -517,6 +584,7 @@ export default function Page() {
               zoom={view === '85' ? 0.85 : view === '75' ? 0.75 : 1}
               comfortable={view === 'auto'}
               responsive={automaticWidth.current && view !== 'page' && view !== 'actual'}
+              onMetricsChange={setPreviewMetrics}
             >
               <ThemeProvider
                 key={String(dark)}
@@ -550,21 +618,26 @@ export default function Page() {
               </ThemeProvider>
             </PreviewCanvas>
             <footer className="preview-status">
-              <span>
+              <span
+                className="preview-metrics"
+                aria-label={`미리보기 ${Math.round(previewMetrics.width)}픽셀, 배율 ${Math.round(previewMetrics.scale * 100)}퍼센트`}
+              >
                 <i />
-                {view === 'page' || view === 'auto'
-                  ? '전체 보기와 읽기로 편하게 살펴보세요.'
-                  : '안에서 스크롤하며 읽어보세요.'}
+                <span className="preview-mode">
+                  {previewMetrics.overview ? '전체 보기' : '읽기'}
+                </span>
+                <span className="preview-size">
+                  {Math.round(previewMetrics.scale * 100)}%<b aria-hidden="true">·</b>
+                  {Math.round(previewMetrics.width)}px
+                </span>
               </span>
               <button type="button" onClick={() => setCodeOpen(true)}>
-                현재 설정 가져가기 ↗
+                코드 가져가기 <span aria-hidden="true">↗</span>
               </button>
             </footer>
           </div>
         </div>
-        <p className="playground-caption">
-          직접 조정한 설정과 같은 소스를 가져가세요. 특정 플랫폼에 묶이지 않습니다.
-        </p>
+        <p className="playground-caption">글꼴은 프로젝트 그대로. 구성은 나답게.</p>
       </div>
       <ThemeProvider
         key={`dialogs-${dark}`}

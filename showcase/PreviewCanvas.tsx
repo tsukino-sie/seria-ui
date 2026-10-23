@@ -1,4 +1,6 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+
+export type PreviewMetrics = { width: number; scale: number; overview: boolean };
 
 /** Read at a useful width, inspect the whole page, or use actual CSS pixel size. */
 export default function PreviewCanvas({
@@ -8,6 +10,7 @@ export default function PreviewCanvas({
   responsive = false,
   zoom = 1,
   comfortable = false,
+  onMetricsChange,
 }: {
   children: ReactNode;
   width?: number;
@@ -15,6 +18,7 @@ export default function PreviewCanvas({
   responsive?: boolean;
   zoom?: number;
   comfortable?: boolean;
+  onMetricsChange?: (metrics: PreviewMetrics) => void;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
@@ -63,6 +67,9 @@ export default function PreviewCanvas({
           ),
         )
       : 1;
+  useEffect(() => {
+    onMetricsChange?.({ width: layoutWidth, scale, overview });
+  }, [layoutWidth, scale, overview, onMetricsChange]);
   return (
     <div
       className="preview-viewport"
@@ -84,9 +91,14 @@ export default function PreviewCanvas({
           {children}
         </div>
       </div>
-      <span className="preview-scale" aria-label={`미리보기 배율 ${Math.round(scale * 100)}퍼센트`}>
-        {Math.round(scale * 100)}%
-      </span>
+      {!onMetricsChange && (
+        <span
+          className="preview-scale"
+          aria-label={`미리보기 배율 ${Math.round(scale * 100)}퍼센트`}
+        >
+          {Math.round(scale * 100)}%
+        </span>
+      )}
     </div>
   );
 }
