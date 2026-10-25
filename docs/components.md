@@ -246,3 +246,7 @@ export function ChapterNavigation({ progress }: { progress: number }) {
 빈 목록은 표시하지 않아요. `activeId`가 목록에 없으면 첫 활성 항목을 표시해요. 모든 항목이 비활성이면 첫 항목을 표시하고 전체 재생을 비활성화해요. 선택 항목이 많거나 놓인 곳이 좁으면 줄바꿈하므로 간단한 구간 탐색에 권장해요.
 
 공개 타입은 `PlaybackItem`, `PlaybackControlsProps`, `PlaybackControlsLabels`, `PlaybackControlsStyle`이에요. 기본 라벨은 한국어이며 `labels={{ play: 'Play', pause: 'Pause', goTo: (label) => 'Go to ' + label }}`처럼 필요한 값만 바꿀 수 있어요.
+
+## 소개 페이지 구성 도구 · 1.9
+
+소개에서 사용하는 `Presentation`, `BrowserFrame`, `CodeExample`, `PreviewCanvas`와 자동 재생·설명 전환·배치 이동·섹션 이동 훅을 같은 패키지에서 제공해요. [전체 API와 실행 프로젝트 안내](./studio.md)

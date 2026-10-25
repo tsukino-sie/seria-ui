@@ -37,6 +37,18 @@ export type {
 export { Container, Stack, Cluster, Columns, PageSection, MediaFrame } from './layout.js';
 export type { PageSectionProps, MediaFrameProps, Space } from './layout.js';
 export type { DropdownItem } from './dropdown.js';
+export { Presentation, BrowserFrame, CodeExample } from './presentation.js';
+export type { PresentationProps, BrowserFrameProps, CodeExampleProps } from './presentation.js';
+export { PreviewCanvas } from './preview.js';
+export type { PreviewMetrics, PreviewCanvasProps } from './preview.js';
+export { usePlayback } from './usePlayback.js';
+export type { UsePlaybackOptions } from './usePlayback.js';
+export { useSceneTransition } from './useSceneTransition.js';
+export type { SceneTransitionOptions } from './useSceneTransition.js';
+export { useLayoutTransition } from './useLayoutTransition.js';
+export type { LayoutTransitionOptions } from './useLayoutTransition.js';
+export { useSectionScroll } from './useSectionScroll.js';
+export type { SectionScrollOptions } from './useSectionScroll.js';
 export { Surface as Card, Modal as Dialog };
 export type Glass = 'soft' | 'clear' | false;
 const classes = (...values: (string | undefined | false)[]) => values.filter(Boolean).join(' ');

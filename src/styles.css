@@ -1,5 +1,6 @@
 /* Seria UI · Copyright (c) 2026 Sie · See LICENSE. */
 @import './tokens.css';
+@import './presentation.css';
 
 /* Playback colors resolve in the component's own theme scope. */
 .pui-playback {

@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { prepareStudio } from './prepare-studio.mjs';
 
 const root = import.meta.dirname;
 const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
@@ -142,12 +143,22 @@ const hash = (file) =>
   createHash('sha256')
     .update(readFileSync(path.join(downloads, file)))
     .digest('hex');
+const studioName = prepareStudio({
+  root,
+  work,
+  downloads,
+  version,
+  packageFilename: packed.filename,
+  starterPackage,
+});
 const manifest = {
   version,
   package: packed.filename,
   packageSha256: hash(packed.filename),
   starter: starterName,
   starterSha256: hash(starterName),
+  studio: studioName,
+  studioSha256: hash(studioName),
 };
 writeFileSync(path.join(downloads, 'release.json'), JSON.stringify(manifest, null, 2) + '\n');
 console.log(JSON.stringify(manifest, null, 2));

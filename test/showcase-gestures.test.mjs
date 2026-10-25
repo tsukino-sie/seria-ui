@@ -9,7 +9,7 @@ const compile = (file) =>
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
   }).outputText;
 const position = { exports: {} };
-vm.runInNewContext(compile('../showcase/sectionPosition.ts'), position);
+vm.runInNewContext(compile('../src/sectionPosition.ts'), position);
 
 // A deterministic event/animation clock exercises the real hook's gesture handling.
 // It does not replace browser layout, touch-device or visual verification.
@@ -64,7 +64,11 @@ function fixture({
     body,
     documentElement: { scrollHeight: sections.at(-1)?.bottom ?? 821, dataset: {} },
     querySelector: (selector) =>
-      selector === '.studio-header' ? { getBoundingClientRect: () => ({ height: 64 }) } : null,
+      selector === '.studio-header'
+        ? { getBoundingClientRect: () => ({ height: 64 }) }
+        : selector === '.showcase-section'
+          ? {}
+          : null,
     querySelectorAll: () =>
       sections.map(({ top, bottom }) => ({
         getBoundingClientRect: () => ({ top: top - win.scrollY, bottom: bottom - win.scrollY }),
@@ -89,8 +93,12 @@ function fixture({
           }
         : position.exports,
   };
-  vm.runInNewContext(compile('../showcase/useSectionScroll.ts'), context);
-  context.exports.default();
+  vm.runInNewContext(compile('../src/useSectionScroll.ts'), context);
+  context.exports.useSectionScroll({
+    sectionSelector: '.showcase-section',
+    headerSelector: '.studio-header',
+    reducedDuration: 760,
+  });
   const event = (type, props = {}) => {
     const result = {
       target: body,

@@ -3,7 +3,7 @@ import KeynoteHero from './KeynoteHero';
 import PlaybackGallery from './PlaybackGallery';
 import StudioPlayground from './StudioPlayground';
 import useSectionScroll from './useSectionScroll';
-import { SERIA_VERSION } from '../src/index';
+import { SERIA_VERSION } from 'seria-ui';
 
 function Icon({ name = 'arrow', size = 20 }: { name?: string; size?: number }) {
   const paths: Record<string, ReactNode> = {
@@ -88,7 +88,7 @@ function Mark() {
     </span>
   );
 }
-export default function App() {
+export default function App({ downloadBase = './downloads' }: { downloadBase?: string }) {
   const [dark, setDark] = useState(false);
   useSectionScroll();
   useEffect(() => {
@@ -224,11 +224,15 @@ export default function App() {
               </span>
             </div>
             <div className="install-package">
-              <a href={`./downloads/seria-ui-starter-${SERIA_VERSION}.tar.gz`} download>
+              <a href={`${downloadBase}/seria-ui-studio-${SERIA_VERSION}.tar.gz`} download>
+                이 소개 페이지 그대로 시작하기 <span aria-hidden="true">↓</span>
+              </a>
+              <p>자동 소개·플레이그라운드·모든 레이아웃과 소스를 함께 받아 수정하세요.</p>
+              <a href={`${downloadBase}/seria-ui-starter-${SERIA_VERSION}.tar.gz`} download>
                 바로 실행하는 시작 파일 <span aria-hidden="true">↓</span>
               </a>
               <p>압축을 푼 뒤 npm install, npm run dev. 네 가지 구성을 직접 바꿔보세요.</p>
-              <a href={`./downloads/seria-ui-${SERIA_VERSION}.tgz`} download>
+              <a href={`${downloadBase}/seria-ui-${SERIA_VERSION}.tgz`} download>
                 Seria UI {SERIA_VERSION} 패키지 받기 <span aria-hidden="true">↓</span>
               </a>
               <code>{`npm install ./seria-ui-${SERIA_VERSION}.tgz`}</code>

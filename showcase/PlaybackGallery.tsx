@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { PlaybackControls, ThemeProvider, type PlaybackControlsStyle } from '../src/index';
+import { useState } from 'react';
+import { PlaybackControls, ThemeProvider, usePlayback, type PlaybackControlsStyle } from 'seria-ui';
 import { studioAccents, studioThemes } from './palette';
 
 const items = [
@@ -19,45 +19,8 @@ function PlaybackExample({
   accent: string;
   custom?: boolean;
 }) {
-  const [activeId, setActiveId] = useState(items[0].id);
-  const [playing, setPlaying] = useState(false);
-  const [completed, setCompleted] = useState(false);
-  const [progress, setProgress] = useState(0.58);
-  const [exploring, setExploring] = useState(false);
-  const [inView, setInView] = useState(false);
-  const elapsed = useRef(2320);
-  const example = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting));
-    if (example.current) observer.observe(example.current);
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => {
-    if (!playing || exploring || !inView) return;
-    let last = performance.now();
-    const timer = window.setInterval(() => {
-      const now = performance.now();
-      const delta = now - last;
-      last = now;
-      if (document.hidden) return;
-      elapsed.current += delta;
-      if (elapsed.current >= 4000) {
-        if (activeId === items[items.length - 1].id) {
-          elapsed.current = 4000;
-          setProgress(1);
-          setCompleted(true);
-          setPlaying(false);
-          return;
-        }
-        elapsed.current = 0;
-        setActiveId(
-          (id) => items[(items.findIndex((item) => item.id === id) + 1) % items.length].id,
-        );
-      }
-      setProgress(elapsed.current / 4000);
-    }, 80);
-    return () => window.clearInterval(timer);
-  }, [playing, exploring, inView, activeId]);
+  const playback = usePlayback<HTMLDivElement>({ items, duration: 4000, initialProgress: 0.58 });
+  const { activeId, progress, playing, completed } = playback;
   const title = custom ? '개별 색상 지정' : theme === 'light' ? '라이트 테마' : '다크 테마';
   const customStyle: PlaybackControlsStyle | undefined = custom
     ? { '--pui-playback-fill': '#627c2d', '--pui-playback-track': '#e0e9c9' }
@@ -70,7 +33,11 @@ function PlaybackExample({
       accent={accent}
       themes={studioThemes}
     >
-      <div className="playback-example" data-example={custom ? 'custom' : theme} ref={example}>
+      <div
+        className="playback-example"
+        data-example={custom ? 'custom' : theme}
+        ref={playback.regionRef}
+      >
         <span className="playback-example-tag">{title}</span>
         <div className="playback-example-stage">
           <div className="playback-scene-label" key={activeId}>
@@ -82,23 +49,11 @@ function PlaybackExample({
             activeId={activeId}
             playing={playing}
             completed={completed}
-            onReplay={() => {
-              elapsed.current = 0;
-              setProgress(0);
-              setActiveId(items[0].id);
-              setCompleted(false);
-              setPlaying(true);
-            }}
+            onReplay={playback.replay}
             progress={progress}
-            onPlayingChange={setPlaying}
-            onActiveChange={(id) => {
-              setActiveId(id);
-              setPlaying(false);
-              setCompleted(false);
-              elapsed.current = 0;
-              setProgress(0);
-            }}
-            onInteractionChange={setExploring}
+            onPlayingChange={playback.setPlaying}
+            onActiveChange={playback.select}
+            onInteractionChange={playback.setInteracting}
             style={customStyle}
             aria-label={`${title} 재생 예시`}
           />

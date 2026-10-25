@@ -6,7 +6,7 @@ import path from 'node:path';
 const root = import.meta.dirname;
 const { version } = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
 const prepared = path.join(root, '.release', version, 'seria-starter');
-const { packageSha256 } = JSON.parse(
+const { packageSha256, studio: studioName } = JSON.parse(
   readFileSync(path.join(root, 'showcase/public/downloads/release.json'), 'utf8'),
 );
 const consumerRoot = path.join(root, '.release', 'consumers', packageSha256.slice(0, 12));
@@ -62,3 +62,49 @@ npm(['install', '--no-audit', '--no-fund'], react18);
 npm(['run', 'build'], react18);
 verifyGlassBuild(react18);
 console.log(`Seria ${version}: standalone React 19 and React 18.3 consumer builds passed.`);
+
+// Extract the archive users download. No src aliases or original showcase files are available.
+const extracted = path.join(consumerRoot, 'studio-archive');
+mkdirSync(extracted, { recursive: true });
+execFileSync('tar', [
+  '-xzf',
+  path.join(root, 'showcase/public/downloads', studioName),
+  '-C',
+  extracted,
+]);
+const studioSource = path.join(extracted, 'seria-studio');
+for (const file of readdirSync(path.join(root, 'showcase'))) {
+  if (
+    !/\.(tsx?|css)$/.test(file) ||
+    ['main.tsx', 'vite.config.ts', 'compatibility.tsx', 'sectionPosition.ts'].includes(file)
+  )
+    continue;
+  assert.equal(
+    readFileSync(path.join(studioSource, 'src/showcase', file), 'utf8'),
+    readFileSync(path.join(root, 'showcase', file), 'utf8'),
+    `Studio source drift: ${file}`,
+  );
+}
+for (const major of [19, 18]) {
+  const destination = path.join(consumerRoot, `studio-react${major}`);
+  mkdirSync(destination, { recursive: true });
+  for (const file of readdirSync(studioSource))
+    cpSync(path.join(studioSource, file), path.join(destination, file), { recursive: true });
+  const studioPackage = JSON.parse(readFileSync(path.join(destination, 'package.json'), 'utf8'));
+  if (major === 18) {
+    Object.assign(studioPackage.dependencies, { react: '18.3.1', 'react-dom': '18.3.1' });
+    Object.assign(studioPackage.devDependencies, {
+      '@types/react': '^18.3.0',
+      '@types/react-dom': '^18.3.0',
+    });
+  }
+  writeFileSync(path.join(destination, 'package.json'), JSON.stringify(studioPackage, null, 2));
+  npm(['install', '--no-audit', '--no-fund'], destination);
+  const installed = JSON.parse(
+    readFileSync(path.join(destination, 'node_modules/seria-ui/package.json'), 'utf8'),
+  );
+  assert.equal(installed.version, version, 'The installed Studio package must match this release.');
+  npm(['run', 'build'], destination);
+  verifyGlassBuild(destination);
+}
+console.log(`Seria ${version}: exact Studio archive builds passed with React 19 and React 18.3.`);

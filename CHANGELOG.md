@@ -1,5 +1,12 @@
 # Changes
 
+## 1.9.0
+
+- Publish the Studio's actual presentation, single browser frame, explained code sample and responsive preview as font-inheriting library components.
+- Share playback timing, single-pass completion/replay, caption transitions, layout animation and configurable section navigation between consumers and the Studio.
+- Generate a complete editable Studio starter from the production source, including all layouts, customization controls, exports, examples, styles and artwork. Preserve the smaller page starter.
+- Build both downloaded starters with the installed package under React 18.3 and 19; verify Studio source parity and retain license notices. Document the full tool and layout inventory.
+
 ## 1.8.2
 
 - Present one showcase section at a time with viewport-based minimum height and native scroll snapping. Section backgrounds vary subtly within the olive palette, without divider lines.

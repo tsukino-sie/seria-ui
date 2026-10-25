@@ -1,0 +1,144 @@
+/* Seria UI · Copyright (c) 2026 Sie · See LICENSE. */
+.pui-presentation {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - var(--pui-presentation-offset, 0px));
+  padding: clamp(1.25rem, 4vw, 3rem);
+  color: var(--pui-ink);
+}
+.pui-presentation-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.pui-presentation-footer {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1.5rem;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pui-presentation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.pui-browser-frame {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: var(--pui-frame-height, 28rem);
+  overflow: hidden;
+  border: 1px solid var(--pui-line);
+  border-radius: var(--pui-radius);
+  background: var(--pui-panel);
+  color: var(--pui-ink);
+  box-shadow: var(--pui-shadow);
+}
+.pui-browser-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  gap: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  background: var(--pui-panel);
+  border-bottom: 1px solid var(--pui-line);
+  color: var(--pui-muted);
+  font-size: 0.8125rem;
+}
+.pui-browser-bar > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pui-browser-dots {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+.pui-browser-dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.35;
+}
+.pui-browser-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overflow-anchor: none;
+  overscroll-behavior: contain;
+}
+.pui-code-example {
+  min-width: 0;
+  color: inherit;
+}
+.pui-code-example code {
+  font-family: inherit;
+  overflow-wrap: anywhere;
+}
+.pui-code-example pre {
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--pui-line);
+  border-radius: var(--pui-radius);
+  background: var(--pui-panel);
+  color: var(--pui-ink);
+  overflow: auto;
+  overscroll-behavior: contain;
+  font: inherit;
+}
+.pui-code-description {
+  margin: 0.5rem 0 0;
+  color: var(--pui-muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.pui-preview-viewport {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overflow-anchor: none;
+  overscroll-behavior: contain;
+}
+.pui-preview-viewport:not([data-mode='page']) {
+  align-items: flex-start;
+  padding-block: 12px;
+}
+.pui-preview-viewport[data-mode='actual'] {
+  justify-content: flex-start;
+  padding-inline: 12px;
+}
+.pui-preview-fit-frame {
+  flex: none;
+  position: relative;
+}
+.pui-preview-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}
+.pui-preview-scale {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  color: var(--pui-muted);
+  font-size: 0.8125rem;
+  pointer-events: none;
+}

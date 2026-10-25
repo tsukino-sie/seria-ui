@@ -1,6 +1,15 @@
-import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { memo } from 'react';
 import { studioThemes } from './palette';
-import { ThemeProvider, PlaybackControls, type ThemeTokens } from '../src/index';
+import {
+  ThemeProvider,
+  PlaybackControls,
+  Presentation,
+  BrowserFrame,
+  CodeExample,
+  usePlayback,
+  useSceneTransition,
+  type ThemeTokens,
+} from 'seria-ui';
 import EditorialPage from './EditorialPage';
 import usePreviewLayout from './usePreviewLayout';
 
@@ -67,220 +76,137 @@ const DemoPage = memo(function DemoPage({ scene, dark }: { scene: number; dark: 
   } as ThemeTokens;
   return (
     <div ref={preview} className="keynote-demo" data-scene={scene} data-focus={slide.focus}>
-      <div className="keynote-browser-window">
-        <div className="keynote-browser-bar">
-          <span className="keynote-browser-dots" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
-          <span>seria / spaces — page preview</span>
-          <span aria-hidden="true">↗</span>
-        </div>
-        <div
-          className="keynote-page"
-          role="region"
-          aria-label="스크롤하며 읽는 소개 페이지"
-          tabIndex={0}
+      <BrowserFrame
+        className="keynote-browser-window"
+        label="seria / spaces — page preview"
+        viewportLabel="스크롤하며 읽는 소개 페이지"
+        toolbar={<span aria-hidden="true">↗</span>}
+        classNames={{
+          bar: 'keynote-browser-bar',
+          dots: 'keynote-browser-dots',
+          viewport: 'keynote-page',
+        }}
+      >
+        <ThemeProvider
+          key={String(dark)}
+          defaultTheme={dark ? 'dark' : 'light'}
+          storageKey={`seria-keynote-v18-${dark}`}
+          surface="inherit"
+          accent={slide.accent}
+          themes={studioThemes}
+          style={tokens}
         >
-          <ThemeProvider
-            key={String(dark)}
-            defaultTheme={dark ? 'dark' : 'light'}
-            storageKey={`seria-keynote-v18-${dark}`}
-            surface="inherit"
-            accent={slide.accent}
-            themes={studioThemes}
-            style={tokens}
-          >
-            <div className="example-backdrop" data-backdrop="light">
-              <EditorialPage
-                layout={scene === 1 ? 'cover' : 'split'}
-                finish={scene >= 2 ? 'ambient' : 'plain'}
-                material="glass"
-                spacious={false}
-              />
-            </div>
-          </ThemeProvider>
-        </div>
-      </div>
+          <div className="example-backdrop" data-backdrop="light">
+            <EditorialPage
+              layout={scene === 1 ? 'cover' : 'split'}
+              finish={scene >= 2 ? 'ambient' : 'plain'}
+              material="glass"
+              spacious={false}
+            />
+          </div>
+        </ThemeProvider>
+      </BrowserFrame>
       <span className="keynote-preview-hint">안에서 스크롤해보세요 ↓</span>
     </div>
   );
 });
 
+const chapters = scenes.map((item) => ({ id: item.focus, label: item.label }));
 export default function KeynoteHero({ dark = false }: { dark?: boolean }) {
-  const [scene, setScene] = useState(0);
-  const [presentedScene, setPresentedScene] = useState(0);
-  const [fading, setFading] = useState(false);
-  const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
-  const [requested, setRequested] = useState(true);
-  const [completed, setCompleted] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [inView, setInView] = useState(true);
-  const [visible, setVisible] = useState(true);
-  const [ready, setReady] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [exploring, setExploring] = useState(false);
-  const elapsed = useRef(0);
-  const region = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const motion = () => {
-      setReducedMotion(media.matches);
-    };
-    const visibility = () => setVisible(!document.hidden);
-    motion();
-    visibility();
-    setReady(true);
-    media.addEventListener('change', motion);
-    document.addEventListener('visibilitychange', visibility);
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
-      threshold: 0.2,
-    });
-    if (region.current) observer.observe(region.current);
-    return () => {
-      media.removeEventListener('change', motion);
-      document.removeEventListener('visibilitychange', visibility);
-      observer.disconnect();
-    };
-  }, []);
-  const playing = ready && requested && !completed && inView && visible && !exploring;
-  useLayoutEffect(() => {
-    if (scene === presentedScene) {
-      setFading(false);
-      return;
-    }
-    setFading(true);
-    // Keep the outgoing content mounted until its fade finishes. Rapid selections
-    // cancel this swap so only the latest requested chapter is shown.
-    const swap = window.setTimeout(
-      () => {
-        setPresentedScene(scene);
-        setFading(false);
-      },
-      reducedMotion ? 280 : 360,
-    );
-    return () => window.clearTimeout(swap);
-  }, [scene, presentedScene, reducedMotion]);
-  useEffect(() => {
-    if (!playing) return;
-    let last = performance.now();
-    const timer = window.setInterval(() => {
-      const now = performance.now();
-      elapsed.current += now - last;
-      last = now;
-      if (elapsed.current >= duration) {
-        if (scene === scenes.length - 1) {
-          elapsed.current = duration;
-          setProgress(1);
-          setCompleted(true);
-          setRequested(false);
-          return;
-        }
-        elapsed.current = 0;
-        setDirection('forward');
-        setScene(scene + 1);
-      }
-      setProgress(Math.min(1, elapsed.current / duration));
-    }, 80);
-    return () => window.clearInterval(timer);
-  }, [playing, scene]);
-  const choose = (index: number) => {
-    if (index < 0 || index >= scenes.length) return;
-    setDirection(index >= scene ? 'forward' : 'backward');
-    setRequested(false);
-    setCompleted(false);
-    elapsed.current = 0;
-    setProgress(0);
-    setScene(index);
-  };
-  const replay = () => {
-    elapsed.current = 0;
-    setProgress(0);
-    setCompleted(false);
-    setDirection('forward');
-    setScene(0);
-    setRequested(true);
-  };
+  const playback = usePlayback({
+    items: chapters,
+    duration,
+    autoPlay: true,
+    respectReducedMotion: false,
+  });
+  const { presentedIndex, leaving, direction } = useSceneTransition(playback.index);
+  const scene = playback.index;
   const slide = scenes[scene];
-  const presentedSlide = scenes[presentedScene];
+  const presentedSlide = scenes[presentedIndex];
   return (
-    <section
-      ref={region}
+    <Presentation
+      ref={playback.regionRef}
       className="keynote showcase-section"
       id="introduction"
       aria-labelledby="keynote-title"
       data-scene={scene}
       data-target-scene={scene}
-      data-playing={playing}
-      data-completed={completed}
-    >
-      <div className="keynote-presentation">
+      data-playing={playback.running}
+      data-completed={playback.completed}
+      classNames={{
+        body: 'keynote-presentation',
+        footer: 'keynote-footer',
+        controls: 'keynote-controls',
+        actions: 'keynote-bottom',
+      }}
+      heading={
         <div className="keynote-heading">
           <p>Seria UI</p>
           <h1 id="keynote-title">단순하게, 깔끔하게.</h1>
           <span>누구나 쉽게, 나다운 페이지를.</span>
         </div>
-        <div
-          className="keynote-stage"
-          data-transition={fading ? 'leaving' : 'visible'}
-          data-direction={direction}
-          role="group"
-          aria-label="자동으로 변화하는 Seria 페이지 소개"
+      }
+      controls={
+        <ThemeProvider
+          key={String(dark)}
+          defaultTheme={dark ? 'dark' : 'light'}
+          storageKey={'seria-keynote-controls-v18-' + dark}
+          surface="inherit"
+          accent={slide.accent}
+          themes={studioThemes}
         >
-          <div className="keynote-stage-glow" aria-hidden="true" />
-          <DemoPage scene={scene} dark={dark} />
-          <div
-            key={presentedScene}
-            className={`keynote-callout keynote-callout-${presentedSlide.focus}`}
-          >
-            <span className="keynote-callout-index">0{presentedScene + 1} / 05</span>
-            <h2>{presentedSlide.title}</h2>
-            <span className="keynote-callout-line" aria-hidden="true" />
-            <p>{presentedSlide.detail}</p>
-            <code aria-describedby={`keynote-setting-${presentedSlide.focus}`}>
-              &lt;{presentedSlide.setting} <strong>{presentedSlide.value}</strong> /&gt;
-            </code>
-            <p className="keynote-setting-note" id={`keynote-setting-${presentedSlide.focus}`}>
-              {presentedSlide.explanation}
-            </p>
-          </div>
-        </div>
-      </div>
-      <footer className="keynote-footer">
-        <div className="keynote-controls">
-          <ThemeProvider
-            key={String(dark)}
-            defaultTheme={dark ? 'dark' : 'light'}
-            storageKey={`seria-keynote-controls-v18-${dark}`}
-            surface="inherit"
-            accent={slide.accent}
-            themes={studioThemes}
-          >
-            <PlaybackControls
-              items={scenes.map((item) => ({ id: item.focus, label: item.label }))}
-              activeId={slide.focus}
-              progress={progress}
-              playing={requested}
-              completed={completed}
-              onReplay={replay}
-              respectReducedMotion={false}
-              onPlayingChange={setRequested}
-              onActiveChange={(id) => choose(scenes.findIndex((item) => item.focus === id))}
-              onInteractionChange={setExploring}
-              aria-label="자동 소개 재생과 장면 이동"
-            />
-          </ThemeProvider>
-        </div>
-        <div className="keynote-bottom">
+          <PlaybackControls
+            items={chapters}
+            activeId={playback.activeId}
+            progress={playback.progress}
+            playing={playback.playing}
+            completed={playback.completed}
+            onReplay={playback.replay}
+            respectReducedMotion={false}
+            onPlayingChange={playback.setPlaying}
+            onActiveChange={playback.select}
+            onInteractionChange={playback.setInteracting}
+            aria-label="자동 소개 재생과 장면 이동"
+          />
+        </ThemeProvider>
+      }
+      actions={
+        <>
           <a href="#playground">
             직접 조합해 보기 <span aria-hidden="true">↗</span>
           </a>
           <a href="#start">
             Seria 시작하기 <span aria-hidden="true">↓</span>
           </a>
+        </>
+      }
+    >
+      <div
+        className="keynote-stage"
+        data-transition={leaving ? 'leaving' : 'visible'}
+        data-direction={direction}
+        role="group"
+        aria-label="자동으로 변화하는 Seria 페이지 소개"
+      >
+        <div className="keynote-stage-glow" aria-hidden="true" />
+        <DemoPage scene={scene} dark={dark} />
+        <div
+          key={presentedIndex}
+          className={'keynote-callout keynote-callout-' + presentedSlide.focus}
+        >
+          <span className="keynote-callout-index">0{presentedIndex + 1} / 05</span>
+          <h2>{presentedSlide.title}</h2>
+          <span className="keynote-callout-line" aria-hidden="true" />
+          <p>{presentedSlide.detail}</p>
+          <CodeExample
+            inline
+            description={presentedSlide.explanation}
+            classNames={{ description: 'keynote-setting-note' }}
+          >
+            &lt;{presentedSlide.setting} <strong>{presentedSlide.value}</strong> /&gt;
+          </CodeExample>
         </div>
-      </footer>
-    </section>
+      </div>
+    </Presentation>
   );
 }

@@ -8,7 +8,7 @@ import {
   ThemeProvider,
   SERIA_VERSION,
   type ThemeTokens,
-} from '../src/index';
+} from 'seria-ui';
 import StarterPage, { type StarterPageProps } from '../examples/StarterPage';
 import starterSource from '../examples/StarterPage.tsx?raw';
 import spacesSource from '../examples/Spaces.tsx?raw';

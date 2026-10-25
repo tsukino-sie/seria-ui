@@ -973,7 +973,7 @@ svg {
   font-size: 13px;
   cursor: pointer;
 }
-.preview-viewport {
+.pui-preview-viewport {
   overflow-anchor: none;
   position: relative;
   display: flex;
@@ -986,25 +986,25 @@ svg {
   overscroll-behavior: contain;
   background: radial-gradient(ellipse at 25% 30%, #bdd09d20, transparent 70%);
 }
-.preview-viewport:not([data-mode='page']) {
+.pui-preview-viewport:not([data-mode='page']) {
   align-items: flex-start;
   padding-block: 12px;
 }
-.preview-viewport[data-mode='actual'] {
+.pui-preview-viewport[data-mode='actual'] {
   justify-content: flex-start;
   padding-inline: 12px;
 }
-.preview-fit-frame {
+.pui-preview-fit-frame {
   flex: none;
   position: relative;
 }
-.preview-canvas {
+.pui-preview-canvas {
   position: absolute;
   top: 0;
   left: 0;
   transform-origin: top left;
 }
-.preview-scale {
+.pui-preview-scale {
   position: absolute;
   right: 10px;
   bottom: 8px;
