@@ -8,6 +8,7 @@ import {
   ThemeProvider,
   SERIA_VERSION,
   type ThemeTokens,
+  CodeExample,
 } from 'seria-ui';
 import StarterPage, { type StarterPageProps } from '../examples/StarterPage';
 import starterSource from '../examples/StarterPage.tsx?raw';
@@ -17,6 +18,7 @@ import spacesStyles from '../examples/spaces.css?raw';
 import themeSource from '../examples/theme.ts?raw';
 import { studioAccents, studioThemes } from './palette';
 import PreviewCanvas, { type PreviewMetrics } from './PreviewCanvas';
+import { describeTags, describeFile } from './codeGuide';
 
 const defaults = {
   opacity: 58,
@@ -75,9 +77,11 @@ function Setting({ title, children }: { title: string; children: ReactNode }) {
 export default function StudioPlayground({
   dark,
   onDarkChange,
+  downloadBase = './downloads',
 }: {
   dark: boolean;
   onDarkChange: (value: boolean) => void;
+  downloadBase?: string;
 }) {
   const [composition, setComposition] =
     useState<NonNullable<StarterPageProps['composition']>>('intro');
@@ -294,7 +298,7 @@ export default function Page() {
           <div>
             <span className="eyebrow">01 / PLAYGROUND</span>
             <h2>같은 요소, 다른 가능성.</h2>
-            <p>유리의 깊이부터 작은 간격까지. 바꾸는 순간, 페이지에도 그대로.</p>
+            <p>구성·배치·색상·유리 효과를 바꾸고, 같은 설정의 코드를 가져가세요.</p>
           </div>
           <span className="live-label">
             <i />
@@ -335,7 +339,10 @@ export default function Page() {
                           type="button"
                           key={id}
                           aria-pressed={composition === id}
-                          onClick={() => setComposition(id as typeof composition)}
+                          onClick={() => {
+                            setComposition(id as typeof composition);
+                            if (id !== 'intro' && layout === 'reverse') setLayout('split');
+                          }}
                         >
                           <span aria-hidden="true">{mark}</span>
                           {label}
@@ -348,6 +355,7 @@ export default function Page() {
                       {choose(
                         [
                           ['split', '좌우'],
+                          ...(composition === 'intro' ? [['reverse', '반대로']] : []),
                           ['stack', '세로'],
                           ...(composition === 'intro' ? [['cover', '겹침']] : []),
                         ],
@@ -707,6 +715,25 @@ export default function Page() {
               ))}
             </select>
           </label>
+          <p className="source-file-description">{describeFile(file)}</p>
+          <details className="source-tag-guide" key={file}>
+            <summary>
+              {describeTags(files[file]).length
+                ? '이 코드의 태그와 역할 살펴보기'
+                : '이 파일에서 바꾸는 내용'}
+            </summary>
+            {describeTags(files[file]).length ? (
+              <CodeExample
+                inline
+                annotations={describeTags(files[file])}
+                className="source-tag-list"
+              >
+                사용한 태그
+              </CodeExample>
+            ) : (
+              <p>{describeFile(file)}</p>
+            )}
+          </details>
           <pre className="source-code" tabIndex={0}>
             <code>{files[file]}</code>
           </pre>
@@ -716,7 +743,7 @@ export default function Page() {
           </p>
           <a
             className="text-link"
-            href={`./downloads/seria-ui-starter-${SERIA_VERSION}.tar.gz`}
+            href={`${downloadBase}/seria-ui-starter-${SERIA_VERSION}.tar.gz`}
             download
           >
             전체 시작 파일 받기 ↓

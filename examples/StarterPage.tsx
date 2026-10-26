@@ -18,7 +18,7 @@ import ComponentPage from './ComponentPage';
 export type StarterPageProps = {
   composition?: 'intro' | 'journal' | 'workspace' | 'components';
   material?: 'glass' | 'solid' | 'open';
-  layout?: 'split' | 'stack' | 'cover';
+  layout?: 'split' | 'reverse' | 'stack' | 'cover';
   finish?: 'ambient' | 'plain' | 'transparent';
   spacious?: boolean;
   onAction?: () => void;

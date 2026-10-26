@@ -96,9 +96,11 @@ export function BrowserFrame({
   );
 }
 
+export type CodeAnnotation = { name: string; description: ReactNode };
 export type CodeExampleProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
   children: ReactNode;
   description?: ReactNode;
+  annotations?: readonly CodeAnnotation[];
   inline?: boolean;
   classNames?: { description?: string };
 };
@@ -106,20 +108,36 @@ export type CodeExampleProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
 export function CodeExample({
   children,
   description,
+  annotations = [],
   inline = false,
   classNames = {},
   className,
   ...props
 }: CodeExampleProps) {
   const id = useId();
+  const describedBy =
+    [description ? id : '', annotations.length ? `${id}-tags` : ''].filter(Boolean).join(' ') ||
+    undefined;
   return (
     <div {...props} className={cx('pui-code-example', className)} data-inline={inline || undefined}>
       {inline ? (
-        <code aria-describedby={description ? id : undefined}>{children}</code>
+        <code aria-describedby={describedBy}>{children}</code>
       ) : (
         <pre tabIndex={0}>
-          <code aria-describedby={description ? id : undefined}>{children}</code>
+          <code aria-describedby={describedBy}>{children}</code>
         </pre>
+      )}
+      {annotations.length > 0 && (
+        <dl className="pui-code-annotations" id={`${id}-tags`}>
+          {annotations.map((item) => (
+            <div key={item.name}>
+              <dt>
+                <code>{item.name}</code>
+              </dt>
+              <dd>{item.description}</dd>
+            </div>
+          ))}
+        </dl>
       )}
       {description && (
         <p id={id} className={cx('pui-code-description', classNames.description)}>

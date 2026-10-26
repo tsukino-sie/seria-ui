@@ -38,7 +38,12 @@ export { Container, Stack, Cluster, Columns, PageSection, MediaFrame } from './l
 export type { PageSectionProps, MediaFrameProps, Space } from './layout.js';
 export type { DropdownItem } from './dropdown.js';
 export { Presentation, BrowserFrame, CodeExample } from './presentation.js';
-export type { PresentationProps, BrowserFrameProps, CodeExampleProps } from './presentation.js';
+export type {
+  PresentationProps,
+  BrowserFrameProps,
+  CodeExampleProps,
+  CodeAnnotation,
+} from './presentation.js';
 export { PreviewCanvas } from './preview.js';
 export type { PreviewMetrics, PreviewCanvasProps } from './preview.js';
 export { usePlayback } from './usePlayback.js';

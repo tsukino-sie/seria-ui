@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { PlaybackControls, ThemeProvider, usePlayback, type PlaybackControlsStyle } from 'seria-ui';
+import {
+  PlaybackControls,
+  ThemeProvider,
+  usePlayback,
+  CodeExample,
+  type PlaybackControlsStyle,
+} from 'seria-ui';
+import { describeTags } from './codeGuide';
 import { studioAccents, studioThemes } from './palette';
 
 const items = [
@@ -75,8 +82,8 @@ export default function PlaybackGallery() {
       <div className="section-heading">
         <div>
           <span className="eyebrow">PLAYBACK / MADE TO REUSE</span>
-          <h2 id="playback-title">작은 컨트롤도, 당신의 색으로.</h2>
-          <p>테마를 따라 자연스럽게. 필요할 때는 진행 바만 다른 색으로.</p>
+          <h2 id="playback-title">재생·정지·장면 이동을, 한곳에서.</h2>
+          <p>아래 점으로 장면을 고르고, 오른쪽 버튼으로 재생과 정지를 바꿔보세요.</p>
         </div>
         <div className="playback-swatches" role="group" aria-label="재생 예시 강조색">
           {swatches.map((swatch) => (
@@ -104,8 +111,12 @@ export default function PlaybackGallery() {
           <br />
           터치는 한 번으로 제목 확인, 한 번 더 누르면 이동.
         </p>
-        <pre tabIndex={0} aria-label="PlaybackControls 사용 예시">
-          <code>{`<ThemeProvider accent="${accent}" surface="inherit">
+        <CodeExample
+          annotations={describeTags('<ThemeProvider /><PlaybackControls />')}
+          description="items는 장면 목록, activeId는 현재 장면, progress는 0부터 1까지의 진행 정도예요."
+          aria-label="PlaybackControls 사용 예시"
+        >
+          {`<ThemeProvider accent="${accent}" surface="inherit">
   <PlaybackControls
     items={chapters} activeId={activeId}
     playing={playing} progress={progress}
@@ -114,8 +125,8 @@ export default function PlaybackGallery() {
     onPlayingChange={setPlaying}
     onInteractionChange={setExploring}
   />
-</ThemeProvider>`}</code>
-        </pre>
+</ThemeProvider>`}
+        </CodeExample>
       </div>
     </section>
   );

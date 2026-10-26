@@ -4,6 +4,8 @@ import PlaybackGallery from './PlaybackGallery';
 import StudioPlayground from './StudioPlayground';
 import useSectionScroll from './useSectionScroll';
 import { SERIA_VERSION } from 'seria-ui';
+import { CodeExample } from 'seria-ui';
+import { describeTags } from './codeGuide';
 
 function Icon({ name = 'arrow', size = 20 }: { name?: string; size?: number }) {
   const paths: Record<string, ReactNode> = {
@@ -128,7 +130,7 @@ export default function App({ downloadBase = './downloads' }: { downloadBase?: s
       </header>
       <main id="main">
         <KeynoteHero dark={dark} />
-        <StudioPlayground dark={dark} onDarkChange={setDark} />
+        <StudioPlayground dark={dark} onDarkChange={setDark} downloadBase={downloadBase} />
         <PlaybackGallery />
         <section className="principles-section section-wrap showcase-section" id="principles">
           <div className="section-heading">
@@ -160,7 +162,9 @@ export default function App({ downloadBase = './downloads' }: { downloadBase?: s
                 세로 묶음, 가로 묶음과 자동 열 배치. 요소를 추가해도 간격과 정렬은 같은 규칙으로
                 이어져요.
               </p>
-              <code>Stack · Cluster · Columns</code>
+              <CodeExample inline annotations={describeTags('<Stack /><Cluster /><Columns />')}>
+                Stack · Cluster · Columns
+              </CodeExample>
             </article>
             <article>
               <span className="principle-number">02</span>
@@ -174,7 +178,9 @@ export default function App({ downloadBase = './downloads' }: { downloadBase?: s
                 은은한 배경, 강조 표면, 떠 있는 카드. 모든 곳에 효과를 더하지 않고 필요한 곳에
                 표정을 주세요.
               </p>
-              <code>Hero · Surface · Theme</code>
+              <CodeExample inline annotations={describeTags('<Hero /><Surface />')}>
+                Hero · Surface
+              </CodeExample>
             </article>
             <article>
               <span className="principle-number">03</span>
@@ -188,7 +194,13 @@ export default function App({ downloadBase = './downloads' }: { downloadBase?: s
                 서체와 콘텐츠는 프로젝트의 몫. 기존 페이지에는 배경을 유지하는 모드로 필요한
                 컴포넌트부터 적용해요.
               </p>
-              <code>surface="inherit"</code>
+              <CodeExample
+                inline
+                annotations={describeTags('<ThemeProvider />')}
+                description={'surface="inherit"는 기존 페이지의 배경을 유지해요.'}
+              >
+                surface="inherit"
+              </CodeExample>
             </article>
           </div>
         </section>
@@ -251,7 +263,7 @@ export default function App({ downloadBase = './downloads' }: { downloadBase?: s
             </div>
             <pre tabIndex={0}>
               <code>
-                <span className="code-purple">import</span> {'{ Container, Stack, Hero, Button }'}
+                <span className="code-purple">import</span> {'{ Container, Stack, Hero }'}
                 <br /> <span className="code-purple">from</span>{' '}
                 <span className="code-green">'seria-ui'</span>;<br />
                 <br />
@@ -283,8 +295,12 @@ export default function App({ downloadBase = './downloads' }: { downloadBase?: s
               </code>
             </pre>
             <div className="code-footer">
-              <span />
-              작게 시작해도, 자연스럽게 확장할 수 있도록.
+              <CodeExample inline annotations={describeTags('<Container /><Stack /><Hero />')}>
+                이 코드에서 사용하는 태그
+              </CodeExample>
+              <p className="code-value-note">
+                gap={'{8}'}은 요소 사이의 간격, tone="ambient"는 은은한 배경이에요.
+              </p>
             </div>
           </div>
         </section>

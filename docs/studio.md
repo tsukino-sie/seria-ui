@@ -6,7 +6,7 @@
 ## 전체 페이지 그대로 시작
 
 [소개 페이지의 시작하기](https://seria-ui-studio.honey-puppy-6755.chatgpt.site/#start)에서 **이 소개 페이지 그대로 시작하기**를 받으세요.
-`seria-ui-studio-1.9.0.tar.gz`에는 현재 사이트와 같은 App, 자동 소개, 플레이그라운드, 재생 예시, 모든 섹션의 레이아웃·스타일·예제 이미지가 들어 있어요.
+`seria-ui-studio-1.9.1.tar.gz`에는 현재 사이트와 같은 App, 자동 소개, 플레이그라운드, 재생 예시, 모든 섹션의 레이아웃·스타일·예제 이미지가 들어 있어요.
 
 ```sh
 npm install
@@ -102,6 +102,7 @@ export function Introduction() {
 `heading`, `controls`, `actions`와 본문을 원하는 UI로 바꿀 수 있어요.
 `BrowserFrame`은 기본 높이 `28rem`이며 `height`, `toolbar`와 `classNames`로 조정해요.
 `CodeExample`은 인라인 태그 또는 여러 줄 코드를 받고 설명을 접근성 속성으로 연결해요.
+`annotations={[{ name: '<Stack>', description: '내용을 세로로 묶는 레이아웃이에요.' }]}`로 태그 자체의 역할도 설명할 수 있어요. 설정값 설명은 `description`에 따로 적어요.
 코드는 텍스트로 전달하며 HTML 실행이나 임의 구문 변환을 하지 않아요.
 
 ### 재생과 설명 전환
@@ -144,6 +145,7 @@ const layoutRef = useLayoutTransition(layout);
 
 `useLayoutTransition`은 같은 노드를 유지하고 위치 차이를 900ms 동안 보간해요.
 다른 HTML 구조에는 `rootSelector`, `layoutSelector`, `itemsSelector`, `duration`을 전달하세요.
+소개 예제의 첫 배치 변경은 `Spaces layout="reverse"`로 좌우를 바꿔요. Spaces는 Seria 요소를 조합한 예제 페이지이며 라이브러리의 별도 기본 태그는 아니에요. 글과 사진을 계속 유지해 위치만 보간하고 투명도는 바꾸지 않아요. 좁은 화면에서는 제목부터 읽는 한 열 순서를 유지해요.
 모션 감소 환경에서는 이 추가 이동을 생략해요. 이미지를 불러오거나 요소를 자동으로 추가하지 않아요.
 
 `PreviewCanvas`의 부모에는 높이를 지정하세요. `responsive`는 현재 공간에서 다시 배치하며,

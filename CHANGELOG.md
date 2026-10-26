@@ -1,5 +1,12 @@
 # Changes
 
+## 1.9.1
+
+- Explain visible code tags as named UI roles, separately from setting values. Add tag and file help to the exported-source viewer, setup example and playback examples.
+- Make the first layout demonstration slide the existing text and image into opposite columns instead of merging a glass card over the photograph. Keep that arrangement during later surface and color chapters.
+- Offer the same reverse layout in the editable example and playground, preserving the mobile reading order. Keep preview content fully visible; only the external chapter explanation fades.
+- Add optional, accessible annotations to CodeExample and include these changes in both downloadable starters.
+
 ## 1.9.0
 
 - Publish the Studio's actual presentation, single browser frame, explained code sample and responsive preview as font-inheriting library components.

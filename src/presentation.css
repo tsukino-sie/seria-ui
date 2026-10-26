@@ -104,6 +104,28 @@
   font-size: 0.875rem;
   line-height: 1.7;
 }
+.pui-code-annotations {
+  display: grid;
+  gap: 0.625rem;
+  margin: 0.875rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.pui-code-annotations > div {
+  min-width: 0;
+}
+.pui-code-annotations dt {
+  font-weight: 600;
+}
+.pui-code-annotations dd {
+  margin: 0.125rem 0 0;
+  color: var(--pui-muted);
+  overflow-wrap: anywhere;
+}
+.pui-code-annotations dt code {
+  font: inherit;
+  color: inherit;
+}
 .pui-preview-viewport {
   position: relative;
   display: flex;

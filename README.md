@@ -32,7 +32,7 @@ Seria는 글꼴을 선택하거나 로드하지 않아요. 사용하는 프로�
 
 ## 같은 구성으로 바로 시작하기
 
-1.9부터 **소개 사이트 전체 시작 프로젝트**를 제공해요. 자동 소개·플레이그라운드·상단 메뉴·모든 섹션·마무리를 현재 사이트의 같은 원본으로 실행하고 수정할 수 있어요. `seria-ui-studio-1.9.0.tar.gz`를 받고 `npm install`, `npm run dev`로 시작하세요.
+1.9부터 **소개 사이트 전체 시작 프로젝트**를 제공해요. 자동 소개·플레이그라운드·상단 메뉴·모든 섹션·마무리를 현재 사이트의 같은 원본으로 실행하고 수정할 수 있어요. `seria-ui-studio-1.9.1.tar.gz`를 받고 `npm install`, `npm run dev`로 시작하세요.
 
 소개에서 쓰는 `Presentation`, `BrowserFrame`, `CodeExample`, `PreviewCanvas`, `usePlayback`, `useSceneTransition`, `useLayoutTransition`, `useSectionScroll`도 공개 API로 가져올 수 있어요. [모든 UI·도구·레이아웃과 사용 방법](./docs/studio.md)
 
@@ -74,11 +74,11 @@ npm run build
 npm pack
 ```
 
-사용할 React 프로젝트에서 생성된 `seria-ui-1.9.0.tgz`를 설치해요.
+사용할 React 프로젝트에서 생성된 `seria-ui-1.9.1.tgz`를 설치해요.
 React 18.3 이상 또는 19, Headless UI 2.2 이상과 함께 사용해요.
 
 ```sh
-npm install /path/to/seria-ui-1.9.0.tgz
+npm install /path/to/seria-ui-1.9.1.tgz
 ```
 
 ```tsx

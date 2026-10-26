@@ -2,7 +2,7 @@ import './spaces.css';
 import { Button, Card, Cluster, Columns, Hero, Stack } from 'seria-ui';
 
 export type SpacesPageProps = {
-  layout?: 'split' | 'cover' | 'stack';
+  layout?: 'split' | 'reverse' | 'cover' | 'stack';
   material?: 'glass' | 'solid' | 'open';
   finish?: 'ambient' | 'plain' | 'transparent';
   onAction?: () => void;

@@ -47,3 +47,23 @@ test('each explained code sample connects its own note and escapes caller code',
   assert.ok(!html.includes('<script>'));
   assert.match(html, /<pre tabindex="0">/);
 });
+
+test('tag roles and setting explanations are both connected to the displayed code', () => {
+  const html = renderToStaticMarkup(
+    h(
+      CodeExample,
+      {
+        inline: true,
+        description: 'gap は項目の間隔です。',
+        annotations: [{ name: '<Stack>', description: '内容を縦に並べるレイアウトです。' }],
+      },
+      '<Stack gap={6} />',
+    ),
+  );
+  const ids = html.match(/aria-describedby="([^"]+)"/)[1].split(' ');
+  assert.equal(ids.length, 2);
+  ids.forEach((id) => assert.ok(html.includes(`id="${id}"`)));
+  assert.match(html, /<dl[^>]*>/);
+  assert.match(html, /<dt><code>&lt;Stack&gt;<\/code><\/dt>/);
+  assert.match(html, /<dd>内容を縦に並べるレイアウトです。<\/dd>/);
+});

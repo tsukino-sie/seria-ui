@@ -12,55 +12,56 @@ import {
 } from 'seria-ui';
 import EditorialPage from './EditorialPage';
 import usePreviewLayout from './usePreviewLayout';
+import { describeTags } from './codeGuide';
 
 const scenes = [
   {
     label: '단순하게',
     title: '단순하게.',
-    detail: '누구나 쉽게,\n깔끔한 페이지를.',
-    setting: 'Stack',
-    value: 'gap={6}',
-    explanation: '요소 사이의 간격을 일정하게 맞춰요.',
+    detail: '제목·설명·버튼을 한 묶음으로.\n필요한 내용을 채워 넣으세요.',
+    setting: 'Hero',
+    value: 'align="start"',
+    explanation: 'align="start"는 내용을 왼쪽에 맞춰요.',
     accent: '#68783e',
     focus: 'all',
   },
   {
     label: '유연하게',
     title: '유연하게.',
-    detail: '내용과 화면에 맞춰\n유연하게 바뀌는 페이지.',
-    setting: 'Columns',
-    value: 'min="12rem"',
-    explanation: '공간에 맞춰 열 수와 배치를 조절해요.',
+    detail: '같은 사진과 글, 다른 배치.\n넓은 화면에서는 사진을 왼쪽으로.',
+    setting: 'Spaces',
+    value: 'layout="reverse"',
+    explanation: 'reverse는 좌우 위치만 바꿔요. 내용과 버튼은 그대로예요.',
     accent: '#68783e',
     focus: 'layout',
   },
   {
     label: '선명하게',
     title: '선명하게.',
-    detail: '빛과 색은 은은하고 자연스럽게.\n중요한 부분은 또렷하게.',
+    detail: '소개 블록에 은은한 빛을.\n내용을 가리지 않고 깊이만 더해요.',
     setting: 'Hero',
     value: 'tone="ambient"',
-    explanation: '표면에 은은한 빛과 색을 더해요.',
+    explanation: 'tone="ambient"는 소개 블록의 배경에 은은한 색을 더해요.',
     accent: '#68783e',
     focus: 'surface',
   },
   {
     label: '나답게',
     title: '나답게.',
-    detail: '글씨도 내용도,\n나다운 모습 그대로.',
+    detail: '강조색 하나로 버튼과 표시를 함께.\n글꼴과 내용은 내 것 그대로.',
     setting: 'ThemeProvider',
     value: 'accent="#99b44a"',
-    explanation: '강조색을 바꾸고, 글꼴과 내용은 그대로 둬요.',
+    explanation: 'accent는 강조색이에요. 지금은 연두색(#99b44a)을 써요.',
     accent: '#99b44a',
     focus: 'brand',
   },
   {
     label: '자연스럽게',
     title: '자연스럽게.',
-    detail: '어떤 화면에서도,\n자유롭고 자연스럽게 이어지도록.',
+    detail: '화면이 좁아지면 한 열로.\n글씨를 줄이지 않고 아래로 이어져요.',
     setting: 'Columns',
     value: 'min="12rem"',
-    explanation: '좁은 화면에서는 한 열로 자연스럽게 이어져요.',
+    explanation: 'min="12rem"은 열 하나의 최소 너비예요. 더 좁으면 한 열로 배치해요.',
     accent: '#99b44a',
     focus: 'responsive',
   },
@@ -98,7 +99,7 @@ const DemoPage = memo(function DemoPage({ scene, dark }: { scene: number; dark: 
         >
           <div className="example-backdrop" data-backdrop="light">
             <EditorialPage
-              layout={scene === 1 ? 'cover' : 'split'}
+              layout={scene >= 1 ? 'reverse' : 'split'}
               finish={scene >= 2 ? 'ambient' : 'plain'}
               material="glass"
               spacious={false}
@@ -143,7 +144,7 @@ export default function KeynoteHero({ dark = false }: { dark?: boolean }) {
         <div className="keynote-heading">
           <p>Seria UI</p>
           <h1 id="keynote-title">단순하게, 깔끔하게.</h1>
-          <span>누구나 쉽게, 나다운 페이지를.</span>
+          <span>버튼부터 레이아웃까지, 직접 조합하는 React UI.</span>
         </div>
       }
       controls={
@@ -201,6 +202,7 @@ export default function KeynoteHero({ dark = false }: { dark?: boolean }) {
           <CodeExample
             inline
             description={presentedSlide.explanation}
+            annotations={describeTags(`<${presentedSlide.setting} />`)}
             classNames={{ description: 'keynote-setting-note' }}
           >
             &lt;{presentedSlide.setting} <strong>{presentedSlide.value}</strong> /&gt;
