@@ -168,24 +168,45 @@ export function useSectionScroll({
         settleTimer = window.setTimeout(finishNative, 140);
     };
     const wheel = (event: WheelEvent) => {
-      if (
-        event.defaultPrevented ||
-        event.ctrlKey ||
-        event.metaKey ||
-        blocked() ||
-        Math.abs(event.deltaY) <= Math.abs(event.deltaX)
-      ) {
+      if (event.ctrlKey || event.metaKey || blocked()) {
         cancel();
         resetWheel();
         return;
       }
+      // An unrelated handled/horizontal/zero tail is not a request to stop the
+      // vertical transition. Suppress its small Y component while we own it so
+      // native scrolling cannot fight the animation between frames.
+      if (event.defaultPrevented) return;
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+        if (
+          event.deltaY &&
+          ((animating && gestureMove) || (wheelConsumed && performance.now() - wheelLast <= 240))
+        ) {
+          wheelLast = performance.now();
+          event.preventDefault();
+        }
+        return;
+      }
       const direction = event.deltaY > 0 ? 1 : -1;
+      const delta =
+        event.deltaMode === 1
+          ? event.deltaY * 16
+          : event.deltaMode === 2
+            ? event.deltaY * window.innerHeight
+            : event.deltaY;
       const now = performance.now();
       const idle = now - wheelLast > 240;
       const newGesture = idle || direction !== wheelDirection;
       const interrupted = animating && (direction !== moving || !gestureMove);
-      if (interrupted) cancel();
-      if (animating && direction === moving && gestureMove && !nested(event.target, direction)) {
+      if (interrupted) {
+        cancel();
+        wheelConsumed = false;
+        wheelNative = true;
+      }
+      // A page gesture keeps its owner while sections pass under the pointer.
+      // Hit-testing the incoming preview on every pulse used to cancel the
+      // transition unpredictably and hand the same gesture to that preview.
+      if (animating && direction === moving && gestureMove) {
         wheelDirection = direction;
         wheelLast = now;
         wheelConsumed = true;
@@ -202,24 +223,26 @@ export function useSectionScroll({
       }
       wheelDirection = direction;
       wheelLast = now;
-      if (nested(event.target, direction)) {
+      const continuingPage = wheelConsumed;
+      if (continuingPage) {
+        // Small inertial tails remain consumed, without accumulating into a
+        // second move. A fresh deliberate notch after arrival can continue
+        // paging immediately; continuously turning a wheel must not lock it.
+        if (Math.abs(delta) < 20) {
+          event.preventDefault();
+          return;
+        }
+        wheelConsumed = false;
+        wheelTotal = 0;
+      }
+      if (!continuingPage && nested(event.target, direction)) {
         cancel();
         wheelNative = true;
         wheelConsumed = false;
         wheelTotal = 0;
         return;
       }
-      if (wheelConsumed) {
-        event.preventDefault();
-        return;
-      }
       if (wheelNative) return;
-      const delta =
-        event.deltaMode === 1
-          ? event.deltaY * 16
-          : event.deltaMode === 2
-            ? event.deltaY * window.innerHeight
-            : event.deltaY;
       wheelTotal += Math.abs(delta);
       wheelDestination = next(direction);
       nativeIntent = { direction, amount: wheelTotal, minimum: 20 };

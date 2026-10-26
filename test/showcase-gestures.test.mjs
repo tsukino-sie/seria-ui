@@ -155,13 +155,13 @@ function fixture({
   };
 }
 
-test('a deliberate edge gesture starts once and momentum cannot skip two sections', () => {
+test('a deliberate edge gesture starts once and small momentum cannot skip two sections', () => {
   const f = fixture();
   assert.equal(f.wheel(60).defaultPrevented, true);
   assert.equal(f.frames.size, 1);
   for (let i = 0; i < 10; i++) {
     f.tick(100);
-    f.wheel(20);
+    f.wheel(10);
   }
   assert.equal(f.win.scrollY, 757);
   assert.equal(f.frames.size, 0);
@@ -455,6 +455,139 @@ test('a same-direction wheel pulse keeps an automatic transition running', () =>
   f.tick(1500);
   assert.equal(f.win.scrollY, 757);
   assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('an owned page gesture keeps moving when a preview passes under the pointer', () => {
+  const f = fixture();
+  const reader = f.reader();
+  reader.style.overscrollBehaviorY = 'contain';
+  assert.equal(f.wheel(60).defaultPrevented, true);
+  f.tick(400);
+  assert.equal(f.wheel(20, { target: reader }).defaultPrevented, true);
+  assert.equal(f.frames.size, 1);
+  f.tick(600);
+  assert.equal(f.win.scrollY, 757);
+  f.cleanup();
+});
+
+test('an owned gesture tail cannot transfer into the incoming preview after arrival', () => {
+  const f = fixture();
+  const reader = f.reader();
+  reader.scrollTop = 200;
+  f.wheel(60);
+  for (let i = 0; i < 9; i++) {
+    f.tick(100);
+    f.wheel(10);
+  }
+  f.tick(100);
+  assert.equal(f.win.scrollY, 757);
+  assert.equal(f.wheel(8, { target: reader }).defaultPrevented, true);
+  assert.equal(f.frames.size, 0);
+  // A separate gesture deliberately begun inside the preview still belongs to it.
+  f.tick(300);
+  assert.equal(f.wheel(60, { target: reader }).defaultPrevented, false);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('zero and horizontal-only wheel pulses do not cancel a vertical page transition', () => {
+  const f = fixture();
+  f.wheel(60);
+  f.tick(300);
+  f.wheel(0);
+  assert.equal(f.frames.size, 1);
+  f.tick(100);
+  f.wheel(0, { deltaX: 40 });
+  assert.equal(f.frames.size, 1);
+  f.tick(600);
+  assert.equal(f.win.scrollY, 757);
+  f.cleanup();
+});
+
+test('horizontal trackpad noise with a small vertical delta retains page gesture ownership', () => {
+  const f = fixture();
+  f.wheel(60);
+  f.tick(400);
+  f.wheel(1, { deltaX: 2 });
+  assert.equal(f.frames.size, 1);
+  for (let i = 0; i < 3; i++) {
+    f.tick(200);
+    f.wheel(8);
+  }
+  assert.equal(f.win.scrollY, 757);
+  // Noise did not reset the consumed burst and accidentally start another section.
+  f.wheel(8);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('continuously turning a wheel can advance again after arrival without an idle pause', () => {
+  const f = fixture();
+  const reader = f.reader();
+  reader.style.overscrollBehaviorY = 'contain';
+  f.wheel(60);
+  for (let i = 0; i < 9; i++) {
+    f.tick(100);
+    f.wheel(60, { target: reader });
+  }
+  f.tick(100);
+  assert.equal(f.win.scrollY, 757);
+  assert.equal(f.frames.size, 0);
+  // No 240ms idle break, and the incoming preview is still under the pointer.
+  assert.equal(f.wheel(60, { target: reader }).defaultPrevented, true);
+  assert.equal(f.frames.size, 1);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 1514);
+  f.cleanup();
+});
+
+test('small decaying tails after arrival never accumulate into another transition', () => {
+  const f = fixture();
+  f.wheel(60);
+  for (let i = 0; i < 9; i++) {
+    f.tick(100);
+    f.wheel(10);
+  }
+  f.tick(100);
+  for (const amount of [18, 12, 8, 4, 1]) {
+    f.tick(40);
+    assert.equal(f.wheel(amount).defaultPrevented, true);
+    assert.equal(f.win.scrollY, 757);
+    assert.equal(f.frames.size, 0);
+  }
+  f.cleanup();
+});
+
+test('wheel continuation uses normalized line and page units, preserving explicit reversal', () => {
+  for (const [amount, deltaMode] of [
+    [2, 1],
+    [0.05, 2],
+  ]) {
+    const f = fixture();
+    f.wheel(60);
+    for (let i = 0; i < 9; i++) {
+      f.tick(100);
+      f.wheel(10);
+    }
+    f.tick(100);
+    assert.equal(f.wheel(amount, { deltaMode }).defaultPrevented, true);
+    f.tick(300);
+    assert.ok(f.win.scrollY > 757);
+    assert.equal(f.wheel(-1).defaultPrevented, false);
+    assert.equal(f.frames.size, 0);
+    f.cleanup();
+  }
+});
+
+test('a separately handled wheel event does not cancel the current page transition', () => {
+  const f = fixture();
+  f.wheel(60);
+  f.tick(400);
+  f.wheel(20, { defaultPrevented: true });
+  assert.equal(f.frames.size, 1);
+  f.tick(600);
+  assert.equal(f.win.scrollY, 757);
   f.cleanup();
 });
 

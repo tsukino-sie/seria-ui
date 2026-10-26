@@ -1,5 +1,12 @@
 # Changes
 
+## 1.9.3
+
+- Keep an active page wheel gesture owned by the page as incoming previews move under the pointer. Do not transfer its remaining input into a nested reader or cancel the transition.
+- Ignore zero/horizontal wheel tails and already-handled events without cancelling vertical motion. Suppress incidental diagonal Y movement during the owned transition while preserving explicit reversal, zoom and direct-input interruption.
+- Allow a fresh deliberate wheel pulse after arrival to continue without an idle pause. Consume small decaying tails without accumulating another transition; preserve independently started nested-reader gestures.
+- Add regressions for target changes during/after movement, continuous wheel input, inertial noise, handled events and line/page unit normalization.
+
 ## 1.9.2
 
 - Keep desktop wheel navigation automatic when later sections exceed the viewport height. Use the same measured stops as paging keys, including readable portions of longer sections, instead of switching to native scrolling and waiting to realign.
