@@ -219,6 +219,111 @@ test('preview scrolling, overscroll containment and browser zoom remain native',
   f.cleanup();
 });
 
+test('a noncontained reader hands off at both edges during the same wheel burst', () => {
+  const f = fixture();
+  const reader = f.reader();
+  reader.scrollTop = 200;
+  assert.equal(f.wheel(60, { target: reader }).defaultPrevented, false);
+  f.tick(16);
+  reader.scrollTop = 600;
+  assert.equal(f.wheel(60, { target: reader }).defaultPrevented, true);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 757);
+  f.tick(300);
+  reader.scrollTop = 200;
+  assert.equal(f.wheel(-60, { target: reader }).defaultPrevented, false);
+  f.tick(16);
+  reader.scrollTop = 0;
+  assert.equal(f.wheel(-60, { target: reader }).defaultPrevented, true);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 0);
+  f.cleanup();
+});
+
+test('finishing a nested read never pages unless the root actually moved', () => {
+  const f = fixture();
+  const reader = f.reader();
+  reader.scrollTop = 200;
+  f.wheel(60, { target: reader });
+  reader.scrollTop = 260;
+  f.event('scrollend', { target: reader });
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 0);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('an independent reader gesture cannot reuse a stale root origin', () => {
+  const f = fixture();
+  const reader = f.reader();
+  reader.scrollTop = 200;
+  f.wheel(60, { target: reader });
+  // An earlier nested-only event did not emit window scrollend. After the page
+  // restores a different reading position, a new gesture owns a fresh origin.
+  f.tick(300);
+  f.win.scrollY = 200;
+  f.wheel(60, { target: reader });
+  f.event('scrollend', { target: reader });
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 200);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
+test('a wheel that reads the last pixels and chains onto the page finishes forward', () => {
+  const f = fixture();
+  const reader = f.reader();
+  reader.scrollTop = 590;
+  f.wheel(60, { target: reader });
+  // Model the browser using 10px in the reader and chaining the rest to root.
+  reader.scrollTop = 600;
+  f.win.scrollY = 50;
+  f.event('scrollend');
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 757);
+  f.cleanup();
+});
+
+test('a deliberate nested read keeps its intent when a small tail crosses the edge', () => {
+  const f = fixture();
+  const reader = f.reader();
+  reader.scrollTop = 530;
+  f.wheel(60, { target: reader });
+  f.tick(16);
+  reader.scrollTop = 590;
+  f.wheel(8, { target: reader });
+  f.tick(16);
+  reader.scrollTop = 598;
+  f.wheel(8, { target: reader });
+  reader.scrollTop = 600;
+  f.win.scrollY = 6;
+  f.event('scrollend');
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 757);
+  f.cleanup();
+});
+
+test('nested overflow fallback aligns only after root movement and respects containment', () => {
+  const f = fixture();
+  const reader = f.reader();
+  reader.scrollTop = 590;
+  f.wheel(60, { target: reader });
+  f.win.scrollY = 50;
+  f.event('scroll');
+  f.tick(140);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 757);
+  reader.style.overscrollBehaviorY = 'contain';
+  reader.scrollTop = 600;
+  f.tick(300);
+  assert.equal(f.wheel(60, { target: reader }).defaultPrevented, false);
+  f.event('scrollend', { target: reader });
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 757);
+  assert.equal(f.frames.size, 0);
+  f.cleanup();
+});
+
 test('touch scrolling is native and interrupts automatic section movement', () => {
   const f = fixture();
   f.wheel(100);

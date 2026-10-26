@@ -36,7 +36,12 @@ export function useSectionScroll({
     let wheelDestination: number | null = null;
     let touching = false;
     let settleTimer: number | undefined;
-    let nativeIntent: { direction: 1 | -1; amount: number; minimum: number } | null = null;
+    let nativeIntent: {
+      direction: 1 | -1;
+      amount: number;
+      minimum: number;
+      origin?: number;
+    } | null = null;
     let touch: {
       x: number;
       y: number;
@@ -126,8 +131,8 @@ export function useSectionScroll({
       nativeIntent = null;
       window.clearTimeout(settleTimer);
     };
-    const nested = (target: EventTarget | null, direction: 1 | -1) => {
-      if (!(target instanceof Element)) return false;
+    const nested = (target: EventTarget | null, direction: 1 | -1): HTMLElement | null => {
+      if (!(target instanceof Element)) return null;
       for (
         let element: Element | null = target;
         element && element !== document.body;
@@ -141,15 +146,15 @@ export function useSectionScroll({
         )
           continue;
         if (style.overscrollBehaviorY === 'contain' || style.overscrollBehaviorY === 'none')
-          return true;
+          return element;
         if (
           direction > 0
             ? element.scrollTop < element.scrollHeight - element.clientHeight - 1
             : element.scrollTop > 1
         )
-          return true;
+          return element;
       }
-      return false;
+      return null;
     };
     const finishNative = () => {
       window.clearTimeout(settleTimer);
@@ -157,6 +162,9 @@ export function useSectionScroll({
       const intent = nativeIntent;
       nativeIntent = null;
       if (!intent || intent.amount < intent.minimum || wheelNative) return;
+      // A nested reader may finish without moving the page at all. Only align
+      // its overflow when the browser actually chained scrolling to the page.
+      if (intent.origin !== undefined && Math.abs(window.scrollY - intent.origin) <= 2) return;
       const destination = next(intent.direction);
       // Only finish in the last input direction. A freely chosen reading
       // position and an interrupted transition are never pulled backwards.
@@ -235,11 +243,23 @@ export function useSectionScroll({
         wheelConsumed = false;
         wheelTotal = 0;
       }
-      if (!continuingPage && nested(event.target, direction)) {
+      const reader = !continuingPage ? nested(event.target, direction) : null;
+      if (reader) {
+        const pending = !newGesture && nativeIntent?.direction === direction ? nativeIntent : null;
         cancel();
-        wheelNative = true;
         wheelConsumed = false;
         wheelTotal = 0;
+        // Respect containment, but let an ordinary reader hand off at its edge.
+        // Native ownership is reserved for explicit interruptions; latching it
+        // here trapped the whole wheel burst after a preview reached its end.
+        const containment = getComputedStyle(reader).overscrollBehaviorY;
+        if (containment !== 'contain' && containment !== 'none' && !wheelNative)
+          nativeIntent = {
+            direction,
+            amount: (pending?.amount ?? 0) + Math.abs(delta),
+            minimum: 20,
+            origin: pending?.origin ?? window.scrollY,
+          };
         return;
       }
       if (wheelNative) return;

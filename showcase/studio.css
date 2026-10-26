@@ -29,6 +29,11 @@
   :root {
     --studio-scale: 0.8;
   }
+  /* Read inside first, then continue the page at either end of a preview. */
+  .studio .keynote-page,
+  .studio .pui-preview-viewport {
+    overscroll-behavior-y: auto;
+  }
 }
 /* Showcase-only scrollbars. Library consumers retain their own page styling. */
 html,

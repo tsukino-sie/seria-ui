@@ -1,5 +1,11 @@
 # Changes
 
+## 1.9.4
+
+- Let the Studio's desktop previews continue into page navigation at their top and bottom, while keeping their interior readable. Preserve containment for settings, dialogs and the default reusable preview styling.
+- Reserve native-only wheel ownership for explicit interruptions. A noncontained reader can hand off in the same burst; partial native overflow realigns only when the root page actually moved.
+- Cover both reader edges, completed internal reads, partial overflow and the scroll-end fallback with regression tests.
+
 ## 1.9.3
 
 - Keep an active page wheel gesture owned by the page as incoming previews move under the pointer. Do not transfer its remaining input into a nested reader or cancel the transition.
