@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { sectionBoundaryDestination, sectionDestination, sectionEase } from './sectionPosition.js';
 
-/** Native reading with deliberate edge transitions; direct input always takes priority. */
+/** Desktop paging and compact-screen edge transitions; direct input takes priority. */
 export type SectionScrollOptions = {
   enabled?: boolean;
   sectionSelector?: string;
@@ -98,7 +98,10 @@ export function useSectionScroll({
       };
       frame = window.requestAnimationFrame(step);
     };
-    const next = (direction: 1 | -1, position = window.scrollY, paging = false) => {
+    // Desktop wheels and paging keys share the same measured stops. Using the
+    // compact boundary rule here made any overflowing desktop section silently
+    // switch to native scrolling, then wait for scrollend to realign the page.
+    const next = (direction: 1 | -1, position = window.scrollY, paging = !compact.matches) => {
       const sections = Array.from(document.querySelectorAll(sectionSelector), (section) => {
         const rect = section.getBoundingClientRect();
         return { top: rect.top + window.scrollY, bottom: rect.bottom + window.scrollY };
@@ -220,8 +223,8 @@ export function useSectionScroll({
       wheelTotal += Math.abs(delta);
       wheelDestination = next(direction);
       nativeIntent = { direction, amount: wheelTotal, minimum: 20 };
-      // Reading stays native, but reaching the edge during the same gesture
-      // can now hand off to the next section without an extra swipe or pause.
+      // Compact-screen reading stays native. Desktop gestures always use the
+      // same stops, including readable portions of sections taller than a screen.
       if (wheelTotal < 20 || wheelDestination === null) return;
       if (direction * (wheelDestination - window.scrollY) <= 2) {
         wheelNative = true;

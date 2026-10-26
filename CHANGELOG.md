@@ -1,5 +1,11 @@
 # Changes
 
+## 1.9.2
+
+- Keep desktop wheel navigation automatic when later sections exceed the viewport height. Use the same measured stops as paging keys, including readable portions of longer sections, instead of switching to native scrolling and waiting to realign.
+- Preserve free reading within compact-screen sections, automatic boundary transitions, nested readers and immediate interruption by direct input.
+- Exercise all six sections in both directions using the actual short-window geometry, fractional 80% layout coordinates and rounded browser scroll positions.
+
 ## 1.9.1
 
 - Explain visible code tags as named UI roles, separately from setting values. Add tag and file help to the exported-source viewer, setup example and playback examples.

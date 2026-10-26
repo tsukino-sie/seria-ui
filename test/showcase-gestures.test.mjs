@@ -15,6 +15,9 @@ vm.runInNewContext(compile('../src/sectionPosition.ts'), position);
 // It does not replace browser layout, touch-device or visual verification.
 function fixture({
   compact = false,
+  viewport = 821,
+  headerHeight = 64,
+  roundScroll = false,
   sections = [64, 821, 1578].map((top) => ({ top, bottom: top + 757 })),
 } = {}) {
   let clock = 0;
@@ -39,7 +42,7 @@ function fixture({
   const body = new HTMLElement();
   const win = {
     scrollY: 0,
-    innerHeight: 821,
+    innerHeight: viewport,
     location: { hash: '' },
     history: { pushState() {} },
     matchMedia: (query) => ({ matches: query === '(max-width: 1000px)' && compact }),
@@ -57,15 +60,22 @@ function fixture({
     },
     clearTimeout: (id) => timers.delete(id),
     scrollTo: ({ top }) => {
-      win.scrollY = top;
+      win.scrollY = roundScroll
+        ? Math.max(0, Math.min(Math.round(sections.at(-1).bottom) - viewport, Math.round(top)))
+        : top;
     },
   };
   const doc = {
     body,
-    documentElement: { scrollHeight: sections.at(-1)?.bottom ?? 821, dataset: {} },
+    documentElement: {
+      scrollHeight: roundScroll
+        ? Math.round(sections.at(-1).bottom)
+        : (sections.at(-1)?.bottom ?? viewport),
+      dataset: {},
+    },
     querySelector: (selector) =>
       selector === '.studio-header'
-        ? { getBoundingClientRect: () => ({ height: 64 }) }
+        ? { getBoundingClientRect: () => ({ height: headerHeight }) }
         : selector === '.showcase-section'
           ? {}
           : null,
@@ -367,15 +377,52 @@ test('form keys keep their own behavior', () => {
   f.cleanup();
 });
 
-test('desktop reading hands off automatically when the same wheel gesture reaches the edge', () => {
+test('desktop wheels page through long sections immediately, then advance at their end', () => {
   const f = fixture({ sections: mobileSections });
   f.win.scrollY = 350;
-  assert.equal(f.wheel(100).defaultPrevented, false);
-  f.win.scrollY = 843;
   assert.equal(f.wheel(100).defaultPrevented, true);
   assert.equal(f.frames.size, 1);
   f.tick(1000);
+  assert.equal(f.win.scrollY, 757);
+  f.tick(300);
+  assert.equal(f.wheel(100).defaultPrevented, true);
+  f.tick(1000);
+  assert.equal(f.win.scrollY, 843);
+  f.tick(300);
+  assert.equal(f.wheel(100).defaultPrevented, true);
+  f.tick(1000);
   assert.equal(f.win.scrollY, 1600);
+  f.cleanup();
+});
+
+test('all six desktop sections stay automatic in both directions with short-height overflow and fractional zoom', () => {
+  // Measured from the actual 80% Studio at 1265 × 600. From the third
+  // section onward content is taller than the viewport's reading area.
+  const bounds = [
+    [51.1875, 599.984375],
+    [599.984375, 1148.78125],
+    [1148.78125, 1814.71875],
+    [1814.71875, 2411.8125],
+    [2411.8125, 3006.515625],
+    [3006.515625, 3555.3125],
+  ].map(([top, bottom]) => ({ top, bottom }));
+  const f = fixture({ sections: bounds, viewport: 600, headerHeight: 51.1875, roundScroll: true });
+  const travel = (direction, stops) => {
+    for (const expected of stops) {
+      f.tick(300);
+      assert.equal(f.wheel(direction * 24).defaultPrevented, true);
+      f.tick(475);
+      // Same-direction input does not release or restart the animation.
+      assert.equal(f.wheel(direction * 8).defaultPrevented, true);
+      f.tick(500);
+      assert.ok(Math.abs(f.win.scrollY - expected) < 1, `${f.win.scrollY} versus ${expected}`);
+      assert.equal(f.frames.size, 0);
+      f.event('scrollend');
+      assert.equal(f.frames.size, 0);
+    }
+  };
+  travel(1, [549, 1098, 1215, 1764, 2361, 2955]);
+  travel(-1, [2361, 1764, 1215, 1098, 549, 0]);
   f.cleanup();
 });
 
@@ -457,7 +504,7 @@ test('a browser-cancelled touch never leaves an automatic movement running', () 
 });
 
 test('native momentum that finishes in the boundary gap continues forward automatically', () => {
-  const f = fixture({ sections: mobileSections });
+  const f = fixture({ compact: true, sections: mobileSections });
   f.win.scrollY = 800;
   assert.equal(f.wheel(100).defaultPrevented, false);
   f.win.scrollY = 900;
@@ -492,7 +539,7 @@ test('a mobile reading swipe hands off after native scrolling ends without anoth
 });
 
 test('settling leaves interior reading positions and tiny movements untouched', () => {
-  const f = fixture({ sections: mobileSections });
+  const f = fixture({ compact: true, sections: mobileSections });
   f.win.scrollY = 350;
   f.wheel(100);
   f.win.scrollY = 450;
@@ -512,7 +559,7 @@ test('settling leaves interior reading positions and tiny movements untouched', 
 });
 
 test('a scroll-end fallback handles browsers without scrollend and cannot chain another section', () => {
-  const f = fixture({ sections: mobileSections });
+  const f = fixture({ compact: true, sections: mobileSections });
   f.win.scrollY = 800;
   f.wheel(100);
   f.win.scrollY = 900;
